@@ -1,4 +1,6 @@
 import os
+import readline
+import requests
 
 # Define cURL flags and descriptions
 # Dictionary to store cURL flags and their descriptions, grouped by categories
