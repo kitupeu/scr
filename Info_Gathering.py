@@ -156,17 +156,21 @@ def run_all_dns_tools(domain_or_ip):
     host_output = run_command(host_command)
     results.append(f"{BOLD}{GREENISH}Output of 'host':{RESET}\n{host_output}\n{'='*40}\n")
 
-    # 4. Run `dnsenum`
+    # 4. Run `dnsenum` with reduced options
     print(f"{BOLD}{YELLOW}Running 'dnsenum'...{RESET}")
-    dnsenum_command = f"dnsenum {domain_or_ip}"
-    dnsenum_output = run_command(dnsenum_command, timeout=120)  # Increased timeout
+    dnsenum_command = f"dnsenum --noreverse --enum {domain_or_ip}"
+    dnsenum_output = run_command(dnsenum_command, timeout=180)  # Increased timeout
     results.append(f"{BOLD}{GREENISH}Output of 'dnsenum':{RESET}\n{dnsenum_output}\n{'='*40}\n")
 
-    # 5. Run `fierce`
+    # 5. Run `fierce` (patched or replaced)
     print(f"{BOLD}{YELLOW}Running 'fierce'...{RESET}")
-    fierce_command = f"fierce --domain {domain_or_ip}"  # Corrected argument
-    fierce_output = run_command(fierce_command)
-    results.append(f"{BOLD}{GREENISH}Output of 'fierce':{RESET}\n{fierce_output}\n{'='*40}\n")
+    try:
+        fierce_command = f"fierce --domain {domain_or_ip}"  # Correct argument
+        fierce_output = run_command(fierce_command)
+        results.append(f"{BOLD}{GREENISH}Output of 'fierce':{RESET}\n{fierce_output}\n{'='*40}\n")
+    except Exception as e:
+        fierce_error = f"Error running 'fierce': {e}"
+        results.append(f"{BOLD}{RED}Output of 'fierce': {RESET}\n{fierce_error}\n{'='*40}\n")
 
     # Consolidate results
     print(f"{BOLD}{SKY_BLUE}All DNS tool outputs consolidated:{RESET}")
