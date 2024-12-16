@@ -468,8 +468,8 @@ def main():
         choice = int(choice)
 
         if choice == 0:
-            print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
-            sys.exit(0)  # Exit with success status
+            print(f"{BOLD}{YELLOW}Returning to the previous menu or session.{RESET}")
+            break  # Exits the current loop, returning to the calling context.
 
         print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
         domain_or_ip = input().strip()
