@@ -113,8 +113,8 @@ def display_flags_by_category():
             # Loop through the flags and descriptions of the selected category
             for flag, description in curl_flags[selected_category].items():
                 print(f"  {flag}: {description}")
-            back = input("\nPress the left arrow key (<-) to return to the main menu: ").strip()
-            if back == "<-":
+            back = input("Press Enter to return to the main menu: ").strip()
+            if back == "":
                 continue
         elif choice.lower() == "exit" or choice == str(len(categories) + 1):
             print("Goodbye!")
