@@ -17,7 +17,7 @@ def input_colored(prompt, color):
     return input(f"{color}{prompt}{RESET}")
 
 def fetch_and_execute_remote_script():
-    """Fetch and execute a remote script."""
+    """cURL Flags Manual."""
     script_url = "https://raw.githubusercontent.com/kitupeu/scr/refs/heads/main/Curl_Flag.py"
 
     try:
@@ -86,7 +86,7 @@ def select_http_method_or_flags():
     """Select HTTP method or add custom flags."""
     while True:
         print_colored("\nStep 1: Choose HTTP Method or Add Flags", SKY_BLUE)
-        options = ["GET", "POST", "PUT", "DELETE", "PATCH", "Add Custom Flags", "Fetch and Execute Remote Script", "Go Back"]
+        options = ["GET", "POST", "PUT", "DELETE", "PATCH", "Add Custom Flags", "cURL Flags Manual", "Go Back"]
         for idx, option in enumerate(options, 1):
             print_colored(f"{idx}. {option}", YELLOW)
         choice = input_colored("Select an option: ", YELLOW)
