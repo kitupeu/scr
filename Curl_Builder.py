@@ -1,5 +1,4 @@
 import os
-import tempfile
 import readline
 import requests
 
@@ -10,7 +9,6 @@ GREENISH = "\033[92m"
 YELLOW = "\033[93m"
 BOLD = "\033[1m"
 
-# Adjust color functions based on the toggle
 def print_colored(text, color):
     """Print text in the specified color."""
     print(f"{color}{text}{RESET}")
@@ -18,10 +16,9 @@ def print_colored(text, color):
 def input_colored(prompt, color):
     """Input with colored prompt."""
     return input(f"{color}{prompt}{RESET}")
-  
-# Fetch and Execute Remote Script
+
 def fetch_and_execute_remote_script():
-    """Go Back."""
+    """Fetch and execute a remote script without saving it locally."""
     script_url = "https://kitup.eu/scripts/py/Master_cURL.py"
 
     try:
@@ -29,19 +26,13 @@ def fetch_and_execute_remote_script():
         response = requests.get(script_url)
 
         if response.status_code == 200:
-            # Get the script content
+            # Execute the script directly from the fetched content
             script_content = response.text
+            print_colored("Fetched script content:", GREENISH)
+            print(script_content)  # Display fetched script content for reference
 
-            # Save the script to a permanent log file
-            log_file_path = "curl_script_log.py"
-            with open(log_file_path, "w") as log_file:
-                log_file.write(script_content)
-
-            print_colored(f"Fetched script saved to: {log_file_path}", GREENISH)
-
-            # Execute the script using Python
             try:
-                os.system(f"python3 {log_file_path}")
+                exec(script_content)  # Directly execute the script content
             except Exception as e:
                 print_colored(f"Error executing the fetched script: {e}", YELLOW)
         else:
@@ -50,7 +41,7 @@ def fetch_and_execute_remote_script():
     except requests.RequestException as e:
         print_colored(f"Error fetching the script: {e}", YELLOW)
 
-def interactive_request_builder(temp_file):
+def interactive_request_builder():
     """Step-by-step interactive cURL command builder."""
     print_colored("\nInteractive cURL Command Builder", GREENISH + BOLD)
 
@@ -87,10 +78,6 @@ def interactive_request_builder(temp_file):
     final_command = " ".join(curl_command)
     print_colored("\nFinal cURL Command:", SKY_BLUE)
     print_colored(final_command, BOLD + GREENISH)
-
-    # Write the command to the temporary file
-    temp_file.write(final_command + "\n")
-    temp_file.flush()  # Ensure data is written to disk
 
     # Optionally execute the command
     execute_command(final_command)
@@ -223,32 +210,22 @@ def execute_command(command):
         else:
             print_colored("Invalid choice. Please answer 'y' or 'n'.", YELLOW)
 
-def print_colored(text, color):
-    """Print text in the specified color."""
-    print(f"{color}{text}{RESET}")
-
-def input_colored(prompt, color):
-    """Input with colored prompt."""
-    return input(f"{color}{prompt}{RESET}")
-
 if __name__ == "__main__":
     print_colored("Welcome to the cURL Command Builder!", GREENISH + BOLD)
-    with tempfile.NamedTemporaryFile(mode="w+", delete=True) as temp_file:
-        print_colored(f"Temporary session file created at: {temp_file.name}", YELLOW)
 
-        while True:
-            print_colored("\nMain Menu:", SKY_BLUE)
-            print_colored("1. Build a cURL command interactively.", YELLOW)
-            print_colored("2. Fetch and Execute Remote Script.", YELLOW)
-            print_colored("0. Exit.", YELLOW)
-            choice = input_colored("Enter your choice: ", YELLOW)
+    while True:
+        print_colored("\nMain Menu:", SKY_BLUE)
+        print_colored("1. Build a cURL command interactively.", YELLOW)
+        print_colored("2. Fetch and Execute Remote Script.", YELLOW)
+        print_colored("0. Exit.", YELLOW)
+        choice = input_colored("Enter your choice: ", YELLOW)
 
-            if choice == "1":
-                interactive_request_builder(temp_file)
-            elif choice == "2":
-                fetch_and_execute_remote_script()
-            elif choice == "0":
-                print_colored("Exiting. Goodbye!", GREENISH)
-                break
-            else:
-                print_colored("Invalid choice. Please select 1, 2, or 0.", YELLOW)
+        if choice == "1":
+            interactive_request_builder()
+        elif choice == "2":
+            fetch_and_execute_remote_script()
+        elif choice == "0":
+            print_colored("Exiting. Goodbye!", GREENISH)
+            break
+        else:
+            print_colored("Invalid choice. Please select 1, 2, or 0.", YELLOW)
