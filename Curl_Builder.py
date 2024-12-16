@@ -18,7 +18,7 @@ def input_colored(prompt, color):
 
 def fetch_and_execute_remote_script():
     """Fetch and execute a remote script."""
-    script_url = "Curl_Flag.py"
+    script_url = "https://raw.githubusercontent.com/kitupeu/scr/refs/heads/main/Curl_Flag.py"
 
     try:
         response = requests.get(script_url)
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     while True:
         print_colored("\nMain Menu:", SKY_BLUE)
         print_colored("1. Build a cURL command interactively.", YELLOW)
-        print_colored("2. Fetch and Execute Remote Script.", YELLOW)
+        print_colored("2. cURL Flags Manual.", YELLOW)
         print_colored("0. Exit.", YELLOW)
         choice = input_colored("Enter your choice: ", YELLOW)
 
