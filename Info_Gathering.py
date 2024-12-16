@@ -442,21 +442,46 @@ def select_wordlist():
         sys.exit(0)  # Exit with status 0 (success)
     return wordlist
 
+def edit_domain_or_ip(current_domain_or_ip):
+    """
+    Allows the user to edit or re-enter a domain or IP.
+    If the user presses Enter, the current domain/IP remains unchanged.
+    """
+    print(f"{BOLD}{YELLOW}Current Domain/IP: {SKY_BLUE}{current_domain_or_ip}{RESET}")
+    new_domain_or_ip = input(f"{BOLD}{YELLOW}Enter a new domain/IP or press Enter to keep the current one: {RESET}").strip()
+
+    if new_domain_or_ip:
+        print(f"{BOLD}{GREENISH}Domain/IP updated to: {new_domain_or_ip}{RESET}")
+        return new_domain_or_ip
+    else:
+        print(f"{BOLD}{GREENISH}Domain/IP remains unchanged: {current_domain_or_ip}{RESET}")
+        return current_domain_or_ip
+
 def main():
     """
     Main function to start the script.
-    Displays the main menu and integrates all tool submenus.
+    Displays the main menu and integrates all tool submenus with the ability to edit the domain or IP.
     """
     print(f"{BOLD}{YELLOW}Welcome to the Enhanced Reconnaissance Toolkit!{RESET}")
     print(f"{GREENISH}This toolkit allows you to use DNS tools, reconnaissance tools, "
           f"directory brute force tools, and more in a flexible and interactive way.{RESET}")
 
+    domain_or_ip = None
+
     while True:
+        if not domain_or_ip:
+            print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
+            domain_or_ip = input().strip()
+            if not domain_or_ip:
+                print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
+                continue
+
         print(f"\n{BOLD}{YELLOW}Main Menu:{RESET}")
         print("1. DNS Tools")
         print("2. Reconnaissance Tools")
         print("3. Directory Brute Force Tools")
         print("4. Puredns")
+        print("5. Edit Domain or IP")
         print("0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
@@ -468,14 +493,11 @@ def main():
         choice = int(choice)
 
         if choice == 0:
-            print(f"{BOLD}{YELLOW}Returning to the previous menu or session.{RESET}")
-            break  # Exits the current loop, returning to the calling context.
+            print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
+            sys.exit(0)  # Exit with success status
 
-        print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
-        domain_or_ip = input().strip()
-
-        if not domain_or_ip:
-            print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
+        if choice == 5:
+            domain_or_ip = edit_domain_or_ip(domain_or_ip)
             continue
 
         # Route the user to the appropriate submenu
@@ -489,5 +511,6 @@ def main():
             puredns_tool(domain_or_ip)
         else:
             print(f"{YELLOW}Invalid choice. Please select a valid option.{RESET}")
+
 if __name__ == "__main__":
     main()
