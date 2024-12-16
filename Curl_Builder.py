@@ -130,7 +130,7 @@ def select_http_method_or_flags():
             if int(choice) == 7:
                 fetch_and_execute_remote_script()
                 return None
-            elif int(choice) == 8:  # Go Back
+            elif int(choice) == 0:  # Go Back
                 return None
             elif int(choice) == 6:
                 return add_custom_flags()
