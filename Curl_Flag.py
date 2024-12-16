@@ -93,22 +93,6 @@ curl_flags = {
 }
 
 # Function to fetch and execute a Python script from a given URL
-def fetch_and_execute_remote_script():
-    """Fetch and execute a remote script."""
-    # Prompt the user to enter the URL of the remote script
-    script_url = "https://kitup.eu/scripts/py/Curl_Builder.py"  # Default URL to the remote script
-    try:
-        # Fetch the script content from the provided URL
-        response = requests.get(script_url)
-        if response.status_code == 200:
-            script_content = response.text
-            # Execute the fetched script content (use cautiously as exec can execute arbitrary code)
-            exec(script_content)
-        else:
-            print(f"Failed to fetch the script. HTTP Status: {response.status_code}")
-    except Exception as e:
-        print(f"Error fetching or executing the script: {e}")
-
 # Function to display cURL flags grouped by category with interactive menu options
 def display_flags_by_category():
     """Display cURL flags grouped by category with an option to view each category."""
@@ -119,7 +103,7 @@ def display_flags_by_category():
         categories = list(curl_flags.keys())
         for i, category in enumerate(categories, start=1):
             print(f"{i}. {category}")
-        print(f"{len(categories) + 1}. Fetch and Execute Remote Script")
+        
         print(f"{len(categories) + 2}. Exit")
 
         choice = input("\nChoose a category to view, fetch a remote script, or exit: ").strip()
@@ -132,12 +116,11 @@ def display_flags_by_category():
             # Loop through the flags and descriptions of the selected category
             for flag, description in curl_flags[selected_category].items():
                 print(f"  {flag}: {description}")
-            back = input("\nType 'back' to return to the main menu: ").strip().lower()
-            if back != "back":
+            back = input("
+Press the left arrow key (<-) to return to the main menu: ").strip()
+            if back != "<-":
                 print("Returning to main menu...")
-        elif choice == str(len(categories) + 1):
-            fetch_and_execute_remote_script()
-        elif choice.lower() == "exit" or choice == str(len(categories) + 2):
+                elif choice.lower() == "exit" or choice == str(len(categories) + 2):
             print("Goodbye!")
             break
         else:
