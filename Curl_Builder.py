@@ -132,6 +132,35 @@ def select_http_method_or_flags():
             return f"-X {options[int(choice) - 1]}"
         print_colored("Invalid choice. Please select a valid option.", YELLOW)
 
+def add_custom_flags():
+    """Add custom cURL flags."""
+    flags = []
+    while True:
+        print_colored("\nAdd Custom Flags (Type 'back' to return to the previous menu)", SKY_BLUE)
+        flag = input_colored("Enter a custom flag (or type 'back' to go back): ", YELLOW).strip()
+        if flag.lower() == "back":
+            return None
+        if flag:
+            flags.append(flag)
+        else:
+            break
+    return " ".join(flags)
+
+def add_credentials():
+    """Add user credentials."""
+    while True:
+        print_colored("\nStep 2: Add User Credentials (optional)", SKY_BLUE)
+        choice = input_colored("Do you want to add user credentials? (y/n/back): ", YELLOW).lower()
+        if choice == "back":
+            return None
+        elif choice == "y":
+            username = input_colored("Enter username: ", YELLOW)
+            password = input_colored("Enter password: ", YELLOW)
+            return f"{username}:{password}@"
+        elif choice == "n":
+            return ""
+        print_colored("Invalid input. Please choose 'y', 'n', or 'back'.", YELLOW)
+
 def construct_url(credentials=""):
     """Construct a URL for the cURL command."""
     while True:
@@ -162,7 +191,82 @@ def construct_url(credentials=""):
             url += f"/{endpoint.strip('/')}"
         return url
 
-# Main Execution Logic
+def add_headers():
+    """Add custom headers interactively."""
+    headers = []
+    while True:
+        print_colored("\nStep 4: Add Custom Headers (or 'back' to go back)", SKY_BLUE)
+        common_headers = {
+            "1": "Authorization: Bearer {value}",
+            "2": "Content-Type: {value}",
+            "3": "Accept: {value}",
+            "4": "User-Agent: {value}",
+            "5": "Cookie: {value}",
+            "6": "Custom Header (manually enter full name and value)",
+            "0": "Done adding headers"
+        }
+        for key, header_template in common_headers.items():
+            print_colored(f"{key}. {header_template}", YELLOW)
+
+        choice = input_colored("Choose a header to add: ", YELLOW).strip()
+        if choice == "back":
+            return None
+        elif choice == "0":
+            break
+        elif choice in common_headers:
+            if choice == "6":
+                custom_header_name = input_colored("Enter the header name: ", YELLOW)
+                custom_header_value = input_colored("Enter the value for the header: ", YELLOW)
+                headers.append(f"-H '{custom_header_name}: {custom_header_value}'")
+            else:
+                header_template = common_headers[choice]
+                header_name = header_template.split(":")[0]
+                header_value = input_colored(f"Enter the value for '{header_name}': ", YELLOW)
+                headers.append(f"-H '{header_template.replace('{value}', header_value)}'")
+        else:
+            print_colored("Invalid choice. Please select a valid option.", YELLOW)
+
+    return headers
+
+def add_data_payload():
+    """Add data payload."""
+    while True:
+        print_colored("\nStep 5: Add Data Payload (optional or 'back' to go back)", SKY_BLUE)
+        data_type = input_colored("Choose data type (1 for JSON, 2 for form data, 3 to skip): ", YELLOW)
+        if data_type.lower() == "back":
+            return None
+        if data_type == "1":
+            payload = input_colored("Enter JSON data: ", YELLOW)
+            return f"-d '{payload}'"
+        elif data_type == "2":
+            payload = input_colored("Enter form data: ", YELLOW)
+            return f"-d '{payload}'"
+        elif data_type == "3":
+            return ""
+        print_colored("Invalid choice. Please select 1, 2, 3, or 'back'.", YELLOW)
+
+def add_cookie():
+    """Add cookies to the request."""
+    while True:
+        print_colored("\nStep 6: Add Cookies (optional or 'back' to go back)", SKY_BLUE)
+        cookie = input_colored("Enter cookie or press Enter to skip: ", YELLOW)
+        if cookie.lower() == "back":
+            return None
+        return cookie if cookie else ""
+
+def execute_command(command):
+    """Execute the constructed cURL command."""
+    while True:
+        choice = input_colored("Do you want to execute the command? (y/n): ", YELLOW).lower()
+        if choice == "y":
+            os.system(command)
+            break
+        elif choice == "n":
+            print_colored("Execution skipped.", GREENISH)
+            break
+        else:
+            print_colored("Invalid choice. Please answer 'y' or 'n'.", YELLOW)
+
 if __name__ == "__main__":
     print_colored("Welcome to the cURL Command Builder!", GREENISH + BOLD)
     log_activity("Script started.")
