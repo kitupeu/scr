@@ -159,12 +159,12 @@ def run_all_dns_tools(domain_or_ip):
     # 4. Run `dnsenum`
     print(f"{BOLD}{YELLOW}Running 'dnsenum'...{RESET}")
     dnsenum_command = f"dnsenum {domain_or_ip}"
-    dnsenum_output = run_command(dnsenum_command)
+    dnsenum_output = run_command(dnsenum_command, timeout=120)  # Increased timeout
     results.append(f"{BOLD}{GREENISH}Output of 'dnsenum':{RESET}\n{dnsenum_output}\n{'='*40}\n")
 
     # 5. Run `fierce`
     print(f"{BOLD}{YELLOW}Running 'fierce'...{RESET}")
-    fierce_command = f"fierce -dns {domain_or_ip}"
+    fierce_command = f"fierce --domain {domain_or_ip}"  # Corrected argument
     fierce_output = run_command(fierce_command)
     results.append(f"{BOLD}{GREENISH}Output of 'fierce':{RESET}\n{fierce_output}\n{'='*40}\n")
 
@@ -173,7 +173,6 @@ def run_all_dns_tools(domain_or_ip):
     consolidated_output = "\n".join(results)
     print(consolidated_output)
     return consolidated_output
-
 
 def recon_tools_submenu(domain_or_ip):
     """
