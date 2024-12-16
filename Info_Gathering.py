@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import threading
+import fileinput
 
 # Define color codes for terminal output
 RESET = "\033[0m"
@@ -8,6 +9,20 @@ SKY_BLUE = "\033[94m"
 GREENISH = "\033[92m"
 YELLOW = "\033[93m"
 BOLD = "\033[1m"
+
+def patch_fierce():
+    """
+    Automatically patches the 'fierce' script to fix the float issue.
+    """
+    filepath = "/usr/lib/python3/dist-packages/fierce/fierce.py"
+    with fileinput.input(filepath, inplace=True, backup=".bak") as file:
+        for line in file:
+            if "random.randint(1e10, 1e11)" in line:
+                print(line.replace("random.randint(1e10, 1e11)", "random.randint(10**10, 10**11)"), end="")
+            else:
+                print(line, end="")
+
+patch_fierce()
 
 def run_command(command, timeout=45):
     """
