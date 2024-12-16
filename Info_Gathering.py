@@ -42,10 +42,7 @@ def dns_tools_submenu(domain_or_ip):
     """
     Submenu for DNS tools.
     """
-    tools = [
-        "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon", 
-        "theHarvester", "amass", "assetfinder", "puredns"
-    ]
+    tools = ["dig", "nslookup", "host", "dnsenum", "fierce"]
 
     while True:
         print(f"{BOLD}{YELLOW}DNS Tools:{RESET}")
@@ -65,13 +62,16 @@ def dns_tools_submenu(domain_or_ip):
 
         tool = tools[int(choice) - 1]
 
-        # Special handling for tools requiring additional arguments
-        if tool == "theHarvester":
-            domain = input(f"{BOLD}{YELLOW}Enter the domain to scan: {RESET}").strip()
-            if not domain:
-                print(f"{YELLOW}Domain is required for theHarvester.{RESET}")
-                continue
-            command = f"theHarvester -d {domain} -l 100 -b all"
+        # Handle specific tool requirements
+        if tool == "dig":
+            record_type = input(f"{BOLD}{YELLOW}Enter record type (e.g., A, MX, CNAME) [default: A]: {RESET}").strip() or "A"
+            command = f"dig {domain_or_ip} {record_type}"
+
+        elif tool == "nslookup":
+            command = f"nslookup {domain_or_ip}"
+
+        elif tool == "host":
+            command = f"host {domain_or_ip}"
 
         elif tool == "dnsenum":
             command = f"dnsenum {domain_or_ip}"
@@ -79,15 +79,76 @@ def dns_tools_submenu(domain_or_ip):
         elif tool == "fierce":
             command = f"fierce -dns {domain_or_ip}"
 
-        elif tool == "dnsrecon":
-            command = f"dnsrecon -d {domain_or_ip}"
-
         else:
-            command = f"{tool} {domain_or_ip}"
+            print(f"{YELLOW}Tool not recognized. Skipping.{RESET}")
+            continue
 
         print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
+def recon_tools_submenu(domain_or_ip):
+    """
+    Submenu for Reconnaissance tools.
+    """
+    tools = ["dnsrecon", "theHarvester", "amass", "assetfinder"]
+
+    while True:
+        print(f"{BOLD}{YELLOW}Reconnaissance Tools:{RESET}")
+        for idx, tool in enumerate(tools, 1):
+            print(f"{idx}. {tool}")
+        print(f"0. Exit")
+
+        choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
+
+        if not choice.isdigit() or not (0 <= int(choice) <= len(tools)):
+            print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
+            continue
+
+        if int(choice) == 0:
+            print(f"{BOLD}{YELLOW}Returning to main menu.{RESET}")
+            break
+
+        tool = tools[int(choice) - 1]
+
+        # Handle specific tool requirements
+        if tool == "dnsrecon":
+            command = f"dnsrecon -d {domain_or_ip}"
+
+        elif tool == "theHarvester":
+            domain = input(f"{BOLD}{YELLOW}Enter the domain to scan: {RESET}").strip()
+            source = input(f"{BOLD}{YELLOW}Enter source (e.g., all, google) [default: all]: {RESET}").strip() or "all"
+            command = f"theHarvester -d {domain} -l 100 -b {source}"
+
+        elif tool == "amass":
+            command = f"amass enum -d {domain_or_ip}"
+
+        elif tool == "assetfinder":
+            command = f"assetfinder --subs-only {domain_or_ip}"
+
+        else:
+            print(f"{YELLOW}Tool not recognized. Skipping.{RESET}")
+            continue
+
+        print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
+        output = run_command(command)
+        print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
+        
+def puredns_tool(domain_or_ip):
+    """
+    Executes puredns with optional user-specified flags.
+    """
+    print(f"{BOLD}{YELLOW}Puredns Options:{RESET}")
+    resolve_file = input(f"{BOLD}{YELLOW}Enter resolver file path [default: None]: {RESET}").strip()
+    wordlist = select_wordlist()
+
+    command = f"puredns resolve {domain_or_ip} -w {wordlist}"
+
+    if resolve_file:
+        command += f" -r {resolve_file}"
+
+    print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
+    output = run_command(command)
+    print(f"{GREENISH}Output of puredns:{RESET}\n{output}\n{'='*40}\n")
 
 def directory_brute_force_submenu(domain_or_ip):
     """
@@ -225,7 +286,9 @@ def main():
     while True:
         print(f"{BOLD}{YELLOW}Main Menu:{RESET}")
         print("1. DNS Tools")
-        print("2. Directory Brute Force Tools")
+        print("2. Reconnaissance Tools")
+        print("3. Directory Brute Force Tools")
+        print("4. Puredns")
         print("0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
@@ -237,9 +300,12 @@ def main():
         if choice == "1":
             dns_tools_submenu(domain_or_ip)
         elif choice == "2":
+            recon_tools_submenu(domain_or_ip)
+        elif choice == "3":
             directory_brute_force_submenu(domain_or_ip)
+        elif choice == "4":
+            puredns_tool(domain_or_ip)
         else:
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
-
 if __name__ == "__main__":
     main()
