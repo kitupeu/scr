@@ -10,12 +10,19 @@ YELLOW = "\033[93m"
 BOLD = "\033[1m"
 
 def run_command(command, timeout=45):
+    """
+    Executes a shell command with a timeout.
+    Returns command output or error message.
+    """
     result = None
 
     def target():
         nonlocal result
         try:
-            result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result = subprocess.run(
+                command, shell=True, check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
         except subprocess.CalledProcessError as e:
             result = e
 
@@ -27,19 +34,25 @@ def run_command(command, timeout=45):
         return f"Timeout after {timeout} seconds."
 
     if isinstance(result, subprocess.CalledProcessError):
-        return f"Error executing command: {result.stderr}"
+        return f"Error executing command: {result.stderr.strip()}"
 
-    return result.stdout
+    return result.stdout.strip()
 
 def select_wordlist():
+    """
+    Prompts the user to enter a path to a wordlist and validates it.
+    """
     print(f"{BOLD}{YELLOW}Enter the path to your wordlist: {RESET}")
     wordlist = input().strip()
     if not wordlist:
         print(f"{YELLOW}No wordlist provided. Exiting.{RESET}")
-        sys.exit(1)
+        sys.exit(0)  # Exit with status 0 (success)
     return wordlist
 
 def gobuster_submenu(domain_or_ip):
+    """
+    Submenu for Gobuster options.
+    """
     wordlist = select_wordlist()
     gobuster_modes = [
         "dir", "dns", "fuzz", "gcs", "s3", "tftp", "vhost", "Exit"
@@ -52,7 +65,7 @@ def gobuster_submenu(domain_or_ip):
 
         choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
 
-        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(gobuster_modes):
+        if not choice.isdigit() or not (1 <= int(choice) <= len(gobuster_modes)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
@@ -71,10 +84,13 @@ def gobuster_submenu(domain_or_ip):
         print(f"{GREENISH}Output of Gobuster {mode}:{RESET}\n{output}\n{'='*40}\n")
 
 def feroxbuster_submenu(domain_or_ip):
+    """
+    Submenu for Feroxbuster options.
+    """
     wordlist = select_wordlist()
     feroxbuster_options = [
-        "basic scan", "set custom user-agent", "add query parameters", 
-        "filter responses by status codes", "increase verbosity", 
+        "basic scan", "set custom user-agent", "add query parameters",
+        "filter responses by status codes", "increase verbosity",
         "custom recursion depth", "Exit"
     ]
 
@@ -85,7 +101,7 @@ def feroxbuster_submenu(domain_or_ip):
 
         choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
 
-        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(feroxbuster_options):
+        if not choice.isdigit() or not (1 <= int(choice) <= len(feroxbuster_options)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
@@ -117,9 +133,12 @@ def feroxbuster_submenu(domain_or_ip):
         print(f"{GREENISH}Output of Feroxbuster {option}:{RESET}\n{output}\n{'='*40}\n")
 
 def execute_dns_query_option(domain_or_ip):
+    """
+    DNS query tool selection and execution.
+    """
     options = [
-        "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon", 
-        "theHarvester", "amass", "assetfinder", "puredns", 
+        "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon",
+        "theHarvester", "amass", "assetfinder", "puredns",
         "gobuster", "feroxbuster", "Exit"
     ]
 
@@ -130,7 +149,7 @@ def execute_dns_query_option(domain_or_ip):
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
 
-        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(options):
+        if not choice.isdigit() or not (1 <= int(choice) <= len(options)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
@@ -138,13 +157,13 @@ def execute_dns_query_option(domain_or_ip):
 
         if tool == "Exit":
             print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
-            break
+            sys.exit(0)  # Exit with status 0 (success)
 
-        if tool in ["gobuster"]:
+        if tool == "gobuster":
             gobuster_submenu(domain_or_ip)
             continue
 
-        if tool in ["feroxbuster"]:
+        if tool == "feroxbuster":
             feroxbuster_submenu(domain_or_ip)
             continue
 
@@ -154,12 +173,15 @@ def execute_dns_query_option(domain_or_ip):
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
 
 def main():
+    """
+    Main function to start the script.
+    """
     print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
     domain_or_ip = input().strip()
 
     if not domain_or_ip:
         print(f"{YELLOW}No domain or IP provided. Exiting.{RESET}")
-        sys.exit(1)
+        sys.exit(0)  # Exit with status 0 (success)
 
     execute_dns_query_option(domain_or_ip)
 
