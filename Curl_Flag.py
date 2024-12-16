@@ -1,5 +1,4 @@
 import os
-import requests
 
 # Define cURL flags and descriptions
 # Dictionary to store cURL flags and their descriptions, grouped by categories
@@ -92,7 +91,6 @@ curl_flags = {
     },
 }
 
-# Function to fetch and execute a Python script from a given URL
 # Function to display cURL flags grouped by category with interactive menu options
 def display_flags_by_category():
     """Display cURL flags grouped by category with an option to view each category."""
@@ -103,10 +101,9 @@ def display_flags_by_category():
         categories = list(curl_flags.keys())
         for i, category in enumerate(categories, start=1):
             print(f"{i}. {category}")
-        
-        print(f"{len(categories) + 2}. Exit")
+        print(f"{len(categories) + 1}. Exit")
 
-        choice = input("\nChoose a category to view, fetch a remote script, or exit: ").strip()
+        choice = input("\nChoose a category to view or exit: ").strip()
         # Check if the user selected a valid category number
         if choice.isdigit() and 1 <= int(choice) <= len(categories):
             # Get the category selected by the user
@@ -116,11 +113,10 @@ def display_flags_by_category():
             # Loop through the flags and descriptions of the selected category
             for flag, description in curl_flags[selected_category].items():
                 print(f"  {flag}: {description}")
-            back = input("
-Press the left arrow key (<-) to return to the main menu: ").strip()
-            if back != "<-":
-                print("Returning to main menu...")
-                elif choice.lower() == "exit" or choice == str(len(categories) + 2):
+            back = input("\nPress the left arrow key (<-) to return to the main menu: ").strip()
+            if back == "<-":
+                continue
+        elif choice.lower() == "exit" or choice == str(len(categories) + 1):
             print("Goodbye!")
             break
         else:
