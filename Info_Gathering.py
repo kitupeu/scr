@@ -55,26 +55,26 @@ def gobuster_submenu(domain_or_ip):
     """
     wordlist = select_wordlist()
     gobuster_modes = [
-        "Exit", "dir", "dns", "fuzz", "gcs", "s3", "tftp", "vhost"
+        "dir", "dns", "fuzz", "gcs", "s3", "tftp", "vhost"
     ]
 
     while True:
         print(f"{BOLD}{YELLOW}Select a Gobuster mode:{RESET}")
-        for idx, mode in enumerate(gobuster_modes):
+        for idx, mode in enumerate(gobuster_modes, 1):
             print(f"{idx}. {mode}")
+        print(f"0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
 
-        if not choice.isdigit() or not (0 <= int(choice) < len(gobuster_modes)):
+        if not choice.isdigit() or not (0 <= int(choice) <= len(gobuster_modes)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
-        mode = gobuster_modes[int(choice)]
-
-        if mode == "Exit":
+        if int(choice) == 0:
             print(f"{BOLD}{YELLOW}Returning to main menu.{RESET}")
             break
 
+        mode = gobuster_modes[int(choice) - 1]
         command = f"gobuster {mode} -u http://{domain_or_ip} -w {wordlist}"
         if mode == "vhost":
             command += " --append-domain"
@@ -89,28 +89,28 @@ def feroxbuster_submenu(domain_or_ip):
     """
     wordlist = select_wordlist()
     feroxbuster_options = [
-        "Exit", "basic scan", "set custom user-agent", "add query parameters",
+        "basic scan", "set custom user-agent", "add query parameters",
         "filter responses by status codes", "increase verbosity",
         "custom recursion depth"
     ]
 
     while True:
         print(f"{BOLD}{YELLOW}Select a Feroxbuster option:{RESET}")
-        for idx, option in enumerate(feroxbuster_options):
+        for idx, option in enumerate(feroxbuster_options, 1):
             print(f"{idx}. {option}")
+        print(f"0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
 
-        if not choice.isdigit() or not (0 <= int(choice) < len(feroxbuster_options)):
+        if not choice.isdigit() or not (0 <= int(choice) <= len(feroxbuster_options)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
-        option = feroxbuster_options[int(choice)]
-
-        if option == "Exit":
+        if int(choice) == 0:
             print(f"{BOLD}{YELLOW}Returning to main menu.{RESET}")
             break
 
+        option = feroxbuster_options[int(choice) - 1]
         command = f"feroxbuster -u http://{domain_or_ip} -w {wordlist}"
 
         if option == "set custom user-agent":
@@ -137,27 +137,28 @@ def execute_dns_query_option(domain_or_ip):
     DNS query tool selection and execution.
     """
     options = [
-        "Exit", "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon",
+        "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon",
         "theHarvester", "amass", "assetfinder", "puredns",
         "gobuster", "feroxbuster"
     ]
 
     while True:
         print(f"{BOLD}{YELLOW}Select a tool to execute:{RESET}")
-        for idx, option in enumerate(options):
+        for idx, option in enumerate(options, 1):
             print(f"{idx}. {option}")
+        print(f"0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
 
-        if not choice.isdigit() or not (0 <= int(choice) < len(options)):
+        if not choice.isdigit() or not (0 <= int(choice) <= len(options)):
             print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
-        tool = options[int(choice)]
-
-        if tool == "Exit":
+        if int(choice) == 0:
             print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
             sys.exit(0)  # Exit with status 0 (success)
+
+        tool = options[int(choice) - 1]
 
         if tool == "gobuster":
             gobuster_submenu(domain_or_ip)
