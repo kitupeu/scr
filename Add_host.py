@@ -14,14 +14,23 @@ def display_menu():
     print(f"{SKY_BLUE}{BOLD}Manage /etc/hosts File{RESET}")
     print(f"{GREENISH}1. Add an IP and domain")
     print(f"2. Delete an IP and domain")
-    print(f"3. Exit{RESET}")
+    print(f"3. Show current entries")
+    print(f"4. Exit{RESET}")
     choice = input(f"{YELLOW}Enter your choice: {RESET}")
     return choice
 
-def display_hosts_entries():
+def display_hosts_entries(show=True):
+    """Fetch and optionally display current /etc/hosts entries."""
     with open("/etc/hosts", "r") as hosts_file:
         lines = hosts_file.readlines()
         entries = [line.strip() for line in lines if line.strip() and not line.startswith("#")]
+    if show:
+        if not entries:
+            print(f"{YELLOW}No entries found in /etc/hosts.{RESET}")
+        else:
+            print(f"{SKY_BLUE}\nCurrent /etc/hosts entries:{RESET}")
+            for idx, entry in enumerate(entries, 1):
+                print(f"{idx}. {entry}")
     return entries
 
 def add_entry():
@@ -40,15 +49,10 @@ def add_entry():
 def delete_entry():
     try:
         # Display current entries
-        entries = display_hosts_entries()
+        entries = display_hosts_entries(show=True)
         if not entries:
-            print(f"{YELLOW}No entries found in /etc/hosts to delete.{RESET}")
             return
         
-        print(f"{SKY_BLUE}\nCurrent /etc/hosts entries:{RESET}")
-        for idx, entry in enumerate(entries, 1):
-            print(f"{idx}. {entry}")
-
         # Ask the user to select an entry to delete
         choice = int(input(f"\n{YELLOW}Select the entry number to delete: {RESET}"))
         if 1 <= choice <= len(entries):
@@ -80,6 +84,9 @@ def main():
         elif choice == "2":
             delete_entry()
         elif choice == "3":
+            # Show current entries without modifying anything
+            display_hosts_entries(show=True)
+        elif choice == "4":
             print(f"{SKY_BLUE}Exiting...{RESET}")
             break
         else:
