@@ -95,22 +95,17 @@ curl_flags = {
 def display_flags_by_category():
     """Display cURL flags grouped by category with an option to view each category."""
     while True:
-        # Display the list of categories to the user
         print("\nAvailable Categories:")
-        # Extract the list of categories from the curl_flags dictionary
         categories = list(curl_flags.keys())
         for i, category in enumerate(categories, start=1):
             print(f"{i}. {category}")
         print(f"{len(categories) + 1}. Exit")
 
         choice = input("\nChoose a category to view or exit: ").strip()
-        # Check if the user selected a valid category number
         if choice.isdigit() and 1 <= int(choice) <= len(categories):
-            # Get the category selected by the user
             selected_category = categories[int(choice) - 1]
             print(f"\n{selected_category}:")
             print("-" * len(selected_category))
-            # Loop through the flags and descriptions of the selected category
             for flag, description in curl_flags[selected_category].items():
                 print(f"  {flag}: {description}")
             back = input("Press Enter to return to the main menu: ").strip()
@@ -122,7 +117,12 @@ def display_flags_by_category():
         else:
             print("Invalid choice. Please try again.")
 
+def run_script():
+    """Entry point to execute the script logic."""
+    print("Welcome to the cURL Flag Viewer!")
+    display_flags_by_category()
+
 if __name__ == "__main__":
-    # Entry point of the program, welcoming the user
+    run_script()
     print("Welcome to the cURL Flag Viewer!")
     display_flags_by_category()
