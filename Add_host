@@ -1,0 +1,29 @@
+import os
+import subprocess
+
+def update_hosts():
+    # Ask the user for the IP and domain
+    ip_address = input("Enter the IP address: ")
+    domain_name = input("Enter the domain name: ")
+
+    # Create the entry to be added
+    entry = f"{ip_address} {domain_name}"
+
+    try:
+        # Append the entry to /etc/hosts
+        with open("/etc/hosts", "a") as hosts_file:
+            hosts_file.write(f"\n{entry}\n")
+        
+        print(f"Successfully added the entry: {entry}")
+    
+        # Display the contents of /etc/hosts
+        print("\nCurrent /etc/hosts content:")
+        subprocess.run(["cat", "/etc/hosts"])
+    
+    except PermissionError:
+        print("Permission denied. Please run the script with root privileges (e.g., using sudo).")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    update_hosts()
