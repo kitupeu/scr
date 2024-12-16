@@ -506,22 +506,21 @@ def edit_domain_or_ip(current_domain_or_ip):
 def main():
     """
     Main function to start the script.
-    Displays the main menu and integrates all tool submenus, including an automated DNS tools option.
+    Displays the main menu and integrates all tool submenus, requiring a domain or IP at startup.
     """
     print(f"{BOLD}{YELLOW}Welcome to the Enhanced Reconnaissance Toolkit!{RESET}")
     print(f"{GREENISH}This toolkit allows you to use DNS tools, reconnaissance tools, "
           f"directory brute force tools, and more in a flexible and interactive way.{RESET}")
 
-    domain_or_ip = None
+    # Prompt for the domain or IP at the start
+    while True:
+        print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
+        domain_or_ip = input().strip()
+        if domain_or_ip:
+            break
+        print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
 
     while True:
-        if not domain_or_ip:
-            print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
-            domain_or_ip = input().strip()
-            if not domain_or_ip:
-                print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
-                continue
-
         print(f"\n{BOLD}{YELLOW}Main Menu:{RESET}")
         print("1. DNS Tools")
         print("2. Reconnaissance Tools")
