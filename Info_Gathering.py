@@ -1,6 +1,5 @@
 import subprocess
 import sys
-import requests
 import threading
 
 # Define color codes for terminal output
@@ -25,7 +24,6 @@ def run_command(command, timeout=45):
     thread.join(timeout)
 
     if thread.is_alive():
-        print(f"{YELLOW}Command timed out after {timeout} seconds. Skipping.{RESET}")
         return f"Timeout after {timeout} seconds."
 
     if isinstance(result, subprocess.CalledProcessError):
@@ -34,29 +32,95 @@ def run_command(command, timeout=45):
     return result.stdout
 
 def select_wordlist():
-    print(f"{BOLD}{YELLOW}Enter the path to the wordlist for brute force: {RESET}", end="")
+    print(f"{BOLD}{YELLOW}Enter the path to your wordlist: {RESET}")
     wordlist = input().strip()
     if not wordlist:
-        print(f"{YELLOW}No wordlist provided. Please enter a valid path.{RESET}")
+        print(f"{YELLOW}No wordlist provided. Exiting.{RESET}")
         sys.exit(1)
     return wordlist
 
+def gobuster_submenu(domain_or_ip):
+    wordlist = select_wordlist()
+    gobuster_modes = [
+        "dir", "dns", "fuzz", "gcs", "s3", "tftp", "vhost", "Exit"
+    ]
+
+    while True:
+        print(f"{BOLD}{YELLOW}Select a Gobuster mode:{RESET}")
+        for idx, mode in enumerate(gobuster_modes, 1):
+            print(f"{idx}. {mode}")
+
+        choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
+
+        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(gobuster_modes):
+            print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
+            continue
+
+        mode = gobuster_modes[int(choice) - 1]
+
+        if mode == "Exit":
+            print(f"{BOLD}{YELLOW}Returning to main menu.{RESET}")
+            break
+
+        command = f"gobuster {mode} -u http://{domain_or_ip} -w {wordlist}"
+        if mode == "vhost":
+            command += " --append-domain"
+
+        print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
+        output = run_command(command)
+        print(f"{GREENISH}Output of Gobuster {mode}:{RESET}\n{output}\n{'='*40}\n")
+
+def feroxbuster_submenu(domain_or_ip):
+    wordlist = select_wordlist()
+    feroxbuster_options = [
+        "basic scan", "set custom user-agent", "add query parameters", 
+        "filter responses by status codes", "increase verbosity", 
+        "custom recursion depth", "Exit"
+    ]
+
+    while True:
+        print(f"{BOLD}{YELLOW}Select a Feroxbuster option:{RESET}")
+        for idx, option in enumerate(feroxbuster_options, 1):
+            print(f"{idx}. {option}")
+
+        choice = input(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}").strip()
+
+        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(feroxbuster_options):
+            print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
+            continue
+
+        option = feroxbuster_options[int(choice) - 1]
+
+        if option == "Exit":
+            print(f"{BOLD}{YELLOW}Returning to main menu.{RESET}")
+            break
+
+        command = f"feroxbuster -u http://{domain_or_ip} -w {wordlist}"
+
+        if option == "set custom user-agent":
+            user_agent = input(f"{BOLD}{YELLOW}Enter custom User-Agent: {RESET}").strip()
+            command += f" -a \"{user_agent}\""
+        elif option == "add query parameters":
+            query = input(f"{BOLD}{YELLOW}Enter query parameters (key=value): {RESET}").strip()
+            command += f" -Q \"{query}\""
+        elif option == "filter responses by status codes":
+            status_codes = input(f"{BOLD}{YELLOW}Enter status codes to filter (comma-separated): {RESET}").strip()
+            command += f" -C {status_codes}"
+        elif option == "increase verbosity":
+            command += " -v"
+        elif option == "custom recursion depth":
+            depth = input(f"{BOLD}{YELLOW}Enter recursion depth: {RESET}").strip()
+            command += f" -d {depth}"
+
+        print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
+        output = run_command(command)
+        print(f"{GREENISH}Output of Feroxbuster {option}:{RESET}\n{output}\n{'='*40}\n")
+
 def execute_dns_query_option(domain_or_ip):
     options = [
-        "dig",
-        "nslookup",
-        "host",
-        "dnsenum",
-        "fierce",
-        "dnsrecon",
-        "theHarvester",
-        "amass",
-        "assetfinder",
-        "puredns",
-        "gobuster",
-        "feroxbuster",
-        "ffuf",
-        "Exit"
+        "dig", "nslookup", "host", "dnsenum", "fierce", "dnsrecon", 
+        "theHarvester", "amass", "assetfinder", "puredns", 
+        "gobuster", "feroxbuster", "Exit"
     ]
 
     while True:
@@ -64,60 +128,37 @@ def execute_dns_query_option(domain_or_ip):
         for idx, option in enumerate(options, 1):
             print(f"{idx}. {option}")
 
-        print(f"{BOLD}{YELLOW}Enter the number of your choice: {RESET}", end="")
-        choice = input().strip()
+        choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
 
         if not choice.isdigit() or int(choice) < 1 or int(choice) > len(options):
-            print(f"{YELLOW}Invalid choice. Please select a valid option.{RESET}")
+            print(f"{YELLOW}Invalid choice. Please try again.{RESET}")
             continue
 
         tool = options[int(choice) - 1]
 
         if tool == "Exit":
-            print(f"{BOLD}{YELLOW}Exiting the session. Goodbye!{RESET}")
+            print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
             break
 
-        if tool in ["dnsenum", "puredns", "gobuster", "feroxbuster", "ffuf"]:
-            wordlist = select_wordlist()
+        if tool in ["gobuster"]:
+            gobuster_submenu(domain_or_ip)
+            continue
 
-        command = ""
-        if tool == "dig":
-            command = f"dig {domain_or_ip}"
-        elif tool == "nslookup":
-            command = f"nslookup {domain_or_ip}"
-        elif tool == "host":
-            command = f"host {domain_or_ip}"
-        elif tool == "dnsenum":
-            command = f"dnsenum --enum {domain_or_ip} -f {wordlist} -r"
-        elif tool == "fierce":
-            command = f"fierce --domain {domain_or_ip}"
-        elif tool == "dnsrecon":
-            command = f"dnsrecon -d {domain_or_ip}"
-        elif tool == "theHarvester":
-            command = f"theHarvester -d {domain_or_ip} -b google"
-        elif tool == "amass":
-            command = f"amass enum -d {domain_or_ip}"
-        elif tool == "assetfinder":
-            command = f"assetfinder --subs-only {domain_or_ip}"
-        elif tool == "puredns":
-            command = f"puredns bruteforce {wordlist} {domain_or_ip}"
-        elif tool == "gobuster":
-            command = f"gobuster dns -d {domain_or_ip} -w {wordlist}"
-        elif tool == "feroxbuster":
-            command = f"feroxbuster -u http://{domain_or_ip} -w {wordlist}"
-        elif tool == "ffuf":
-            command = f"ffuf -u http://{domain_or_ip} -w {wordlist} -H \"Host: FUZZ.{domain_or_ip}\""
+        if tool in ["feroxbuster"]:
+            feroxbuster_submenu(domain_or_ip)
+            continue
 
+        command = f"{tool} {domain_or_ip}"
         print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
 
 def main():
-    print(f"{BOLD}{YELLOW}Enter the IP or domain to scan: {RESET}", end="")
+    print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
     domain_or_ip = input().strip()
 
     if not domain_or_ip:
-        print(f"{BOLD}{YELLOW}Invalid input. Please enter a valid domain or IP.{RESET}")
+        print(f"{YELLOW}No domain or IP provided. Exiting.{RESET}")
         sys.exit(1)
 
     execute_dns_query_option(domain_or_ip)
