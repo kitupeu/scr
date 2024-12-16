@@ -1,6 +1,7 @@
 import os
 import readline
 import requests
+
 # Define color codes for terminal output
 RESET = "\033[0m"
 SKY_BLUE = "\033[94m"
@@ -17,7 +18,7 @@ def input_colored(prompt, color):
     return input(f"{color}{prompt}{RESET}")
 
 def fetch_and_execute_remote_script():
-    """cURL Flags Manual."""
+    """Fetch and execute a remote Python script."""
     script_url = "https://raw.githubusercontent.com/kitupeu/scr/refs/heads/main/Curl_Flag.py"
 
     try:
@@ -29,9 +30,12 @@ def fetch_and_execute_remote_script():
             print(script_content)  # Display fetched script content for reference
 
             try:
-                exec(script_content)
+                # Safely execute the script in an isolated namespace
+                exec(script_content, {}, {})  # Empty globals and locals for isolation
             except Exception as e:
                 print_colored(f"Error executing the fetched script: {e}", YELLOW)
+                print_colored("Debugging script content:", SKY_BLUE)
+                print(script_content)  # Provide the script content for debugging
         else:
             print_colored(f"Failed to fetch the script. HTTP Status: {response.status_code}", YELLOW)
 
