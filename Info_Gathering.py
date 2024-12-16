@@ -42,8 +42,9 @@ def dns_tools_submenu(domain_or_ip):
     """
     Submenu for DNS tools with expanded options, detailed explanations, and examples for each tool.
     Users can select a tool, input required parameters, and execute commands.
+    Includes an option to run all DNS tools automatically.
     """
-    tools = ["dig", "nslookup", "host", "dnsenum", "fierce"]
+    tools = ["dig", "nslookup", "host", "dnsenum", "fierce", "Run All DNS Tools Automatically"]
 
     while True:
         print(f"{BOLD}{YELLOW}DNS Tools - Enhanced Options:{RESET}")
@@ -113,12 +114,17 @@ def dns_tools_submenu(domain_or_ip):
         elif tool == "fierce":
             print(f"{BOLD}{YELLOW}Using 'fierce' for DNS enumeration:{RESET}")
             print(f"{GREENISH}Examples of 'fierce' commands:{RESET}")
-            print(f"- Basic usage: fierce -dns <domain>\n"
-                  f"- Specify DNS server: fierce -dns <domain> --dnsserver <server>\n")
+            print(f"- Basic usage: fierce --domain <domain>\n"
+                  f"- Specify DNS server: fierce --domain <domain> --dnsserver <server>\n")
             dns_server = input(
                 f"{BOLD}{YELLOW}Enter DNS server [default: system default]: {RESET}"
             ).strip()
-            command = f"fierce -dns {domain_or_ip} --dnsserver {dns_server}" if dns_server else f"fierce -dns {domain_or_ip}"
+            command = f"fierce --domain {domain_or_ip} --dnsserver {dns_server}" if dns_server else f"fierce --domain {domain_or_ip}"
+
+        elif tool == "Run All DNS Tools Automatically":
+            print(f"{BOLD}{YELLOW}Running all DNS tools automatically...{RESET}")
+            run_all_dns_tools(domain_or_ip)
+            continue
 
         else:
             print(f"{YELLOW}Tool not recognized. Skipping.{RESET}")
@@ -129,12 +135,6 @@ def dns_tools_submenu(domain_or_ip):
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
 
-def run_all_dns_tools(domain_or_ip):
-    """
-    Runs all DNS tools sequentially for the given domain or IP.
-    Consolidates the output from each tool and presents it in a single post.
-    """
-    print(f"{BOLD}{YELLOW}Running all DNS tools for: {domain_or_ip}{RESET}")
     
     results = []
 
@@ -509,28 +509,28 @@ def edit_domain_or_ip(current_domain_or_ip):
 def main():
     """
     Main function to start the script.
-    Displays the main menu and integrates all tool submenus, requiring a domain or IP at startup.
+    Displays the main menu and integrates all tool submenus.
     """
     print(f"{BOLD}{YELLOW}Welcome to the Enhanced Reconnaissance Toolkit!{RESET}")
     print(f"{GREENISH}This toolkit allows you to use DNS tools, reconnaissance tools, "
           f"directory brute force tools, and more in a flexible and interactive way.{RESET}")
 
-    # Prompt for the domain or IP at the start
-    while True:
-        print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
-        domain_or_ip = input().strip()
-        if domain_or_ip:
-            break
-        print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
+    domain_or_ip = None
 
     while True:
+        if not domain_or_ip:
+            print(f"{BOLD}{YELLOW}Enter the domain or IP to scan: {RESET}")
+            domain_or_ip = input().strip()
+            if not domain_or_ip:
+                print(f"{YELLOW}No domain or IP provided. Please enter a valid input.{RESET}")
+                continue
+
         print(f"\n{BOLD}{YELLOW}Main Menu:{RESET}")
         print("1. DNS Tools")
         print("2. Reconnaissance Tools")
         print("3. Directory Brute Force Tools")
         print("4. Puredns")
         print("5. Edit Domain or IP")
-        print("6. Run All DNS Tools Automatically")
         print("0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
@@ -543,17 +543,12 @@ def main():
 
         if choice == 0:
             print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
-            sys.exit(0)  # Exit with success status
+            sys.exit(0)
 
         if choice == 5:
             domain_or_ip = edit_domain_or_ip(domain_or_ip)
             continue
 
-        if choice == 6:
-            run_all_dns_tools(domain_or_ip)
-            continue
-
-        # Route the user to the appropriate submenu
         if choice == 1:
             dns_tools_submenu(domain_or_ip)
         elif choice == 2:
@@ -564,6 +559,7 @@ def main():
             puredns_tool(domain_or_ip)
         else:
             print(f"{YELLOW}Invalid choice. Please select a valid option.{RESET}")
+
 
 
 if __name__ == "__main__":
