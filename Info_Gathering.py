@@ -129,6 +129,52 @@ def dns_tools_submenu(domain_or_ip):
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
 
+def run_all_dns_tools(domain_or_ip):
+    """
+    Runs all DNS tools sequentially for the given domain or IP.
+    Consolidates the output from each tool and presents it in a single post.
+    """
+    print(f"{BOLD}{YELLOW}Running all DNS tools for: {domain_or_ip}{RESET}")
+    
+    results = []
+
+    # 1. Run `dig`
+    print(f"{BOLD}{YELLOW}Running 'dig'...{RESET}")
+    dig_command = f"dig {domain_or_ip} ANY"
+    dig_output = run_command(dig_command)
+    results.append(f"{BOLD}{GREENISH}Output of 'dig':{RESET}\n{dig_output}\n{'='*40}\n")
+
+    # 2. Run `nslookup`
+    print(f"{BOLD}{YELLOW}Running 'nslookup'...{RESET}")
+    nslookup_command = f"nslookup {domain_or_ip}"
+    nslookup_output = run_command(nslookup_command)
+    results.append(f"{BOLD}{GREENISH}Output of 'nslookup':{RESET}\n{nslookup_output}\n{'='*40}\n")
+
+    # 3. Run `host`
+    print(f"{BOLD}{YELLOW}Running 'host'...{RESET}")
+    host_command = f"host {domain_or_ip}"
+    host_output = run_command(host_command)
+    results.append(f"{BOLD}{GREENISH}Output of 'host':{RESET}\n{host_output}\n{'='*40}\n")
+
+    # 4. Run `dnsenum`
+    print(f"{BOLD}{YELLOW}Running 'dnsenum'...{RESET}")
+    dnsenum_command = f"dnsenum {domain_or_ip}"
+    dnsenum_output = run_command(dnsenum_command)
+    results.append(f"{BOLD}{GREENISH}Output of 'dnsenum':{RESET}\n{dnsenum_output}\n{'='*40}\n")
+
+    # 5. Run `fierce`
+    print(f"{BOLD}{YELLOW}Running 'fierce'...{RESET}")
+    fierce_command = f"fierce -dns {domain_or_ip}"
+    fierce_output = run_command(fierce_command)
+    results.append(f"{BOLD}{GREENISH}Output of 'fierce':{RESET}\n{fierce_output}\n{'='*40}\n")
+
+    # Consolidate results
+    print(f"{BOLD}{SKY_BLUE}All DNS tool outputs consolidated:{RESET}")
+    consolidated_output = "\n".join(results)
+    print(consolidated_output)
+    return consolidated_output
+
+
 def recon_tools_submenu(domain_or_ip):
     """
     Submenu for Reconnaissance tools with expanded options, detailed explanations, and examples.
@@ -460,7 +506,7 @@ def edit_domain_or_ip(current_domain_or_ip):
 def main():
     """
     Main function to start the script.
-    Displays the main menu and integrates all tool submenus with the ability to edit the domain or IP.
+    Displays the main menu and integrates all tool submenus, including an automated DNS tools option.
     """
     print(f"{BOLD}{YELLOW}Welcome to the Enhanced Reconnaissance Toolkit!{RESET}")
     print(f"{GREENISH}This toolkit allows you to use DNS tools, reconnaissance tools, "
@@ -482,6 +528,7 @@ def main():
         print("3. Directory Brute Force Tools")
         print("4. Puredns")
         print("5. Edit Domain or IP")
+        print("6. Run All DNS Tools Automatically")
         print("0. Exit")
 
         choice = input(f"{BOLD}{YELLOW}Enter your choice: {RESET}").strip()
@@ -500,6 +547,10 @@ def main():
             domain_or_ip = edit_domain_or_ip(domain_or_ip)
             continue
 
+        if choice == 6:
+            run_all_dns_tools(domain_or_ip)
+            continue
+
         # Route the user to the appropriate submenu
         if choice == 1:
             dns_tools_submenu(domain_or_ip)
@@ -511,6 +562,7 @@ def main():
             puredns_tool(domain_or_ip)
         else:
             print(f"{YELLOW}Invalid choice. Please select a valid option.{RESET}")
+
 
 if __name__ == "__main__":
     main()
