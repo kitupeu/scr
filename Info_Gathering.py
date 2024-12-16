@@ -135,7 +135,14 @@ def dns_tools_submenu(domain_or_ip):
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
 
-    
+# End of dns_tools_submenu--------------------------------------------
+
+def run_all_dns_tools(domain_or_ip):
+    """
+    Runs all DNS tools sequentially for the given domain or IP.
+    Consolidates the output from each tool and presents it in a single post.
+    """
+    print(f"{BOLD}{YELLOW}Running all DNS tools for: {domain_or_ip}{RESET}")    
     results = []
 
     # 1. Run `dig`
@@ -177,6 +184,8 @@ def dns_tools_submenu(domain_or_ip):
     consolidated_output = "\n".join(results)
     print(consolidated_output)
     return consolidated_output
+
+# End of run_all_dns_tools--------------------------------------------
 
 def recon_tools_submenu(domain_or_ip):
     """
@@ -269,7 +278,9 @@ def recon_tools_submenu(domain_or_ip):
         print(f"{BOLD}{SKY_BLUE}Executing: {command}{RESET}")
         output = run_command(command)
         print(f"{GREENISH}Output of {tool}:{RESET}\n{output}\n{'='*40}\n")
-        
+
+# End of recon_tools_submenu----------------------------------------------
+
 def puredns_tool(domain_or_ip):
     """
     Executes Puredns with expanded options, explanations, and examples.
@@ -320,6 +331,7 @@ def puredns_tool(domain_or_ip):
     output = run_command(command)
     print(f"{GREENISH}Output of Puredns:{RESET}\n{output}\n{'='*40}\n")
 
+# End of puredns_tool----------------------------------------------
 
 def directory_brute_force_submenu(domain_or_ip):
     """
@@ -350,6 +362,8 @@ def directory_brute_force_submenu(domain_or_ip):
             gobuster_submenu(domain_or_ip)
         elif tool == "feroxbuster":
             feroxbuster_submenu(domain_or_ip)
+
+# End of directory_brute_force_submenul----------------------------------------------
 
 def gobuster_submenu(domain_or_ip):
     """
@@ -421,6 +435,8 @@ def gobuster_submenu(domain_or_ip):
         output = run_command(command)
         print(f"{GREENISH}Output of Gobuster {mode} mode:{RESET}\n{output}\n{'='*40}\n")
 
+# End of gobuster_submenu----------------------------------------------
+
 def feroxbuster_submenu(domain_or_ip):
     """
     Submenu for Feroxbuster options with detailed explanations and examples.
@@ -479,6 +495,7 @@ def feroxbuster_submenu(domain_or_ip):
         output = run_command(command)
         print(f"{GREENISH}Output of Feroxbuster ({option}):{RESET}\n{output}\n{'='*40}\n")
 
+# End of feroxbuster_submenu----------------------------------------------
 
 def select_wordlist():
     """
@@ -490,6 +507,8 @@ def select_wordlist():
         print(f"{YELLOW}No wordlist provided. Exiting.{RESET}")
         sys.exit(0)  # Exit with status 0 (success)
     return wordlist
+
+# End of select_wordlist----------------------------------------------
 
 def edit_domain_or_ip(current_domain_or_ip):
     """
@@ -505,6 +524,8 @@ def edit_domain_or_ip(current_domain_or_ip):
     else:
         print(f"{BOLD}{GREENISH}Domain/IP remains unchanged: {current_domain_or_ip}{RESET}")
         return current_domain_or_ip
+
+# End of edit_domain_or_ip----------------------------------------------
 
 def main():
     """
@@ -543,12 +564,13 @@ def main():
 
         if choice == 0:
             print(f"{BOLD}{YELLOW}Exiting. Goodbye!{RESET}")
-            sys.exit(0)
+            sys.exit(0)  # Exit with success status
 
         if choice == 5:
             domain_or_ip = edit_domain_or_ip(domain_or_ip)
             continue
 
+        # Route the user to the appropriate submenu
         if choice == 1:
             dns_tools_submenu(domain_or_ip)
         elif choice == 2:
