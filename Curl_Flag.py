@@ -101,19 +101,20 @@ def display_flags_by_category():
         categories = list(curl_flags.keys())
         for i, category in enumerate(categories, start=1):
             print(f"{i}. {category}")
-        print(f"{len(categories) + 1}. Exit")
+        print("0. Exit")  # Update the Exit option to be 0
 
         choice = input("\nChoose a category to view or exit: ").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(categories):
+        
+        if choice == "0":  # Handle Exit as 0
+            print("Goodbye!")
+            break
+        elif choice.isdigit() and 1 <= int(choice) <= len(categories):
             selected_category = categories[int(choice) - 1]
             print(f"\n{selected_category}:")
             print("-" * len(selected_category))
             for flag, description in curl_flags[selected_category].items():
                 print(f"  {flag}: {description}")
             input("Press Enter to return to the main menu...")
-        elif choice.lower() in {"exit", str(len(categories) + 1)}:
-            print("Goodbye!")
-            break
         else:
             print("Invalid choice. Please try again.")
 
