@@ -35,22 +35,29 @@ def select_scheme():
     """Prompt user to select HTTP or HTTPS."""
     while True:
         print_colored("\nStep 1: Select Protocol (Scheme)", SKY_BLUE)
+        print_colored("Example: http or https", GREENISH)
         print_colored("1. http", YELLOW)
         print_colored("2. https", YELLOW)
-        choice = input_colored("Choose the protocol (1 or 2): ", YELLOW)
+        print_colored("0. Go Back", YELLOW)
+        choice = input_colored("Choose the protocol (0, 1, or 2): ", YELLOW)
         if choice == "1":
             return "http"
         elif choice == "2":
             return "https"
-        print_colored("Invalid choice. Please enter 1 or 2.", YELLOW)
+        elif choice == "0":
+            return None  # Go back
+        print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
+
 
 def add_user_info():
     """Prompt user to add credentials (optional)."""
     while True:
         print_colored("\nStep 2: Add User Info (Optional Credentials)", SKY_BLUE)
+        print_colored("Example: admin:admin@", GREENISH)
         print_colored("1. Add credentials (username:password)", YELLOW)
         print_colored("2. Skip this step", YELLOW)
-        choice = input_colored("Choose an option (1 or 2): ", YELLOW)
+        print_colored("0. Go Back", YELLOW)
+        choice = input_colored("Choose an option (0, 1, or 2): ", YELLOW)
         if choice == "1":
             username = input_colored("Enter username: ", YELLOW).strip()
             password = input_colored("Enter password: ", YELLOW).strip()
@@ -59,13 +66,20 @@ def add_user_info():
             print_colored("Invalid input. Both username and password are required.", YELLOW)
         elif choice == "2":
             return ""
-        print_colored("Invalid choice. Please enter 1 or 2.", YELLOW)
+        elif choice == "0":
+            return None  # Go back
+        print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
+
 
 def input_host():
     """Prompt user to enter the host (domain or IP)."""
     while True:
         print_colored("\nStep 3: Enter Host (Domain or IP)", SKY_BLUE)
-        host = input_colored("Enter domain name or IP address: ", YELLOW).strip()
+        print_colored("Example: kitup.eu or 192.168.1.1", GREENISH)
+        print_colored("0. Go Back", YELLOW)
+        host = input_colored("Enter domain name or IP address (or '0' to Go Back): ", YELLOW).strip()
+        if host == "0":
+            return None  # Go back
         if host:
             return host
         print_colored("Host cannot be empty. Please enter a valid domain or IP.", YELLOW)
@@ -74,27 +88,40 @@ def select_port(scheme):
     """Prompt user to enter port, defaulting based on scheme."""
     while True:
         print_colored("\nStep 4: Enter Port Number (Optional)", SKY_BLUE)
+        print_colored("Example: :80 for HTTP or :443 for HTTPS", GREENISH)
+        print_colored("0. Go Back", YELLOW)
         default_port = "443" if scheme == "https" else "80"
-        port = input_colored(f"Enter port number (Press Enter for default {default_port}): ", YELLOW).strip()
+        port = input_colored(f"Enter port number (Press Enter for default {default_port} or '0' to Go Back): ", YELLOW).strip()
+        if port == "0":
+            return None  # Go back
         if not port:
             return f":{default_port}"
         if port.isdigit():
             return f":{port}"
         print_colored("Invalid input. Port must be a numeric value.", YELLOW)
 
+
 def input_path():
     """Prompt user to enter path."""
     while True:
         print_colored("\nStep 5: Enter Path", SKY_BLUE)
-        path = input_colored("Enter path (e.g., /dashboard.php) or leave blank for root: ", YELLOW).strip()
+        print_colored("Example: /index.php or /dashboard", GREENISH)
+        print_colored("0. Go Back", YELLOW)
+        path = input_colored("Enter path (e.g., /index.php) or '0' to Go Back: ", YELLOW).strip()
+        if path == "0":
+            return None  # Go back
         return f"/{path.strip('/')}" if path else ""
 
 def add_query_string():
     """Prompt user to add query parameters (optional)."""
     query_params = []
     print_colored("\nStep 6: Add Query String (Optional)", SKY_BLUE)
+    print_colored("Example: ?user=admin&status=active", GREENISH)
+    print_colored("Type 'done' to finish or '0' to Go Back", YELLOW)
     while True:
-        param = input_colored("Enter parameter name (or type 'done' to finish): ", YELLOW).strip()
+        param = input_colored("Enter parameter name: ", YELLOW).strip()
+        if param.lower() == "0":
+            return None  # Go back
         if param.lower() == "done":
             break
         value = input_colored(f"Enter value for '{param}': ", YELLOW).strip()
@@ -104,11 +131,17 @@ def add_query_string():
             print_colored("Both parameter name and value are required.", YELLOW)
     return f"?{'&'.join(query_params)}" if query_params else ""
 
+
 def add_fragment():
     """Prompt user to add a fragment (optional)."""
-    print_colored("\nStep 7: Add Fragment (Optional)", SKY_BLUE)
-    fragment = input_colored("Enter fragment (e.g., status) or leave blank: ", YELLOW).strip()
-    return f"#{fragment}" if fragment else ""
+    while True:
+        print_colored("\nStep 7: Add Fragment (Optional)", SKY_BLUE)
+        print_colored("Example: #section1", GREENISH)
+        print_colored("0. Go Back", YELLOW)
+        fragment = input_colored("Enter fragment (e.g., #section1) or '0' to Go Back: ", YELLOW).strip()
+        if fragment == "0":
+            return None  # Go back
+        return f"#{fragment}" if fragment else ""
 
 def construct_url():
     """Construct and edit the URL step-by-step."""
@@ -122,39 +155,42 @@ def construct_url():
 
     while True:
         print_colored("\n--- URL Builder Menu ---", SKY_BLUE)
-        print_colored("1. Scheme (http/https): " + scheme, YELLOW)
-        print_colored("2. User Info (username:password): " + user_info, YELLOW)
-        print_colored("3. Host (Domain/IP): " + host, YELLOW)
-        print_colored("4. Port: " + port, YELLOW)
-        print_colored("5. Path: " + path, YELLOW)
-        print_colored("6. Query String: " + query_string, YELLOW)
-        print_colored("7. Fragment: " + fragment, YELLOW)
+        print_colored(f"1. Scheme (http/https): {scheme}", YELLOW)
+        print_colored(f"2. User Info (username:password): {user_info}", YELLOW)
+        print_colored(f"3. Host (Domain/IP): {host}", YELLOW)
+        print_colored(f"4. Port: {port}", YELLOW)
+        print_colored(f"5. Path: {path}", YELLOW)
+        print_colored(f"6. Query String: {query_string}", YELLOW)
+        print_colored(f"7. Fragment: {fragment}", YELLOW)
         print_colored("8. Finish and View URL", GREENISH)
+        print_colored("0. Go Back to Main Menu", YELLOW)
         
-        choice = input_colored("Select a component to edit (1-8): ", YELLOW)
+        choice = input_colored("Select a component to edit (0-8): ", YELLOW)
         
         if choice == "1":
-            scheme = select_scheme()
+            scheme = select_scheme() or scheme
         elif choice == "2":
-            user_info = add_user_info()
+            user_info = add_user_info() or user_info
         elif choice == "3":
-            host = input_host()
+            host = input_host() or host
         elif choice == "4":
-            port = select_port(scheme)
+            port = select_port(scheme) or port
         elif choice == "5":
-            path = input_path()
+            path = input_path() or path
         elif choice == "6":
-            query_string = add_query_string()
+            query_string = add_query_string() or query_string
         elif choice == "7":
-            fragment = add_fragment()
+            fragment = add_fragment() or fragment
         elif choice == "8":
-            # Assemble the final URL
             url = f"{scheme}://{user_info}{host}{port}{path}{query_string}{fragment}"
             print_colored("\nConstructed URL:", SKY_BLUE)
             print_colored(url, BOLD + GREENISH)
             return url
+        elif choice == "0":
+            return None  # Go back to the main menu
         else:
-            print_colored("Invalid choice. Please enter a number between 1 and 8.", YELLOW)
+            print_colored("Invalid choice. Please enter a number between 0 and 8.", YELLOW)
+
 def select_http_method():
     """Prompt user to select HTTP method."""
     while True:
