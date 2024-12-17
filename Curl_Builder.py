@@ -29,8 +29,19 @@ def input_colored(prompt, color):
     try:
         return input(f"{color}{prompt}{RESET}")
     except EOFError:
-        print_colored("\nInput terminated. Exiting script.", YELLOW)
-        exit(0)
+        print_colored("\nInput terminated. Returning to previous menu.", YELLOW)
+        return None
+
+def show_tutorial():
+    """Display a tutorial for how to use the program."""
+    print_colored("\n--- How to Use the cURL Command Builder ---", SKY_BLUE)
+    print_colored("1. Follow each step to construct your URL and customize options.", YELLOW)
+    print_colored("2. You can edit each component individually (scheme, host, port, etc.).", YELLOW)
+    print_colored("3. Use the 'Finish and View URL' option to finalize your URL.", YELLOW)
+    print_colored("4. Choose HTTP methods, headers, and other advanced options.", YELLOW)
+    print_colored("5. Use templates and predictions to automate input based on prior data.", YELLOW)
+    print_colored("6. Finally, execute the generated cURL command.", YELLOW)
+    print_colored("\nEnjoy using the tool!", GREENISH)
 
 def select_scheme():
     """Prompt user to select HTTP or HTTPS."""
@@ -49,7 +60,6 @@ def select_scheme():
             return None  # Go back
         print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
 
-
 def add_user_info():
     """Prompt user to add credentials (optional)."""
     print_colored("\nStep 2: Add User Info (Optional Credentials)", SKY_BLUE)
@@ -66,77 +76,49 @@ def add_user_info():
         print_colored("Password cannot be empty. Skipping User Info.", YELLOW)
         return ""
 
-
-
 def input_host():
     """Prompt user to enter the host (domain or IP)."""
     while True:
         print_colored("\nStep 3: Enter Host (Domain or IP)", SKY_BLUE)
         print_colored("Example: kitup.eu or 192.168.1.1", GREENISH)
-        print_colored("Press Enter to skip this step.", YELLOW)
-
         host = input_colored("Enter domain name or IP address: ", YELLOW).strip()
-        if not host:  # Skip if user presses Enter
-            print_colored("Skipping Host step.", GREENISH)
-            return ""
-        return host.strip()  # Return cleaned host input
-
-
+        if host:
+            return host.strip()
+        print_colored("Host cannot be empty.", YELLOW)
 
 def select_port(scheme):
     """Prompt user to enter port, defaulting based on scheme."""
     while True:
         print_colored("\nStep 4: Enter Port Number (Optional)", SKY_BLUE)
         print_colored("Example: :80 for HTTP or :443 for HTTPS", GREENISH)
-        print_colored("0. Go Back", YELLOW)
         default_port = "443" if scheme == "https" else "80"
-        port = input_colored(f"Enter port number (Press Enter for default {default_port} or '0' to Go Back): ", YELLOW).strip()
-        if port == "0":
-            return None  # Go back
+        port = input_colored(f"Enter port number (default {default_port}): ", YELLOW).strip()
         if not port:
             return f":{default_port}"
         if port.isdigit():
             return f":{port}"
-        print_colored("Invalid input. Port must be a numeric value.", YELLOW)
-
+        print_colored("Invalid input. Port must be numeric.", YELLOW)
 
 def input_path():
     """Prompt user to enter path."""
-    while True:
-        print_colored("\nStep 5: Enter Path", SKY_BLUE)
-        print_colored("Example: /index.php or /dashboard", GREENISH)
-        print_colored("0. Go Back", YELLOW)
-        path = input_colored("Enter path (e.g., /index.php) or '0' to Go Back: ", YELLOW).strip()
-        if path == "0":
-            return None  # Go back
-        return f"/{path.strip('/')}" if path else ""
+    print_colored("\nStep 5: Enter Path", SKY_BLUE)
+    print_colored("Example: /index.php or /dashboard", GREENISH)
+    path = input_colored("Enter path: ", YELLOW).strip()
+    return f"/{path.strip('/')}" if path else ""
 
 def add_query_string():
-    """Prompt user to enter the entire query string freely."""
-    print_colored("\nStep 6: Add Query String (Optional)", SKY_BLUE)
-    print_colored("Example: ?search=flag&status=active", GREENISH)
-    print_colored("Press Enter to skip this step.", YELLOW)
-
-    query_string = input_colored("Enter the query string (including '?', or press Enter to skip): ", YELLOW).strip()
-    
-    # Validate and ensure correct format
-    if query_string and not query_string.startswith("?"):
-        print_colored("Query string must start with '?'. Adding '?' automatically.", GREENISH)
-        query_string = f"?{query_string}"
-
-    return query_string
-
-
+    """Prompt user to add query string."""
+    print_colored("\nStep 6: Add Query String", SKY_BLUE)
+    print_colored("Example: ?search=flag", GREENISH)
+    query = input_colored("Enter query string: ", YELLOW).strip()
+    return f"?{query}" if query and not query.startswith("?") else query
 
 def add_fragment():
-    """Prompt user to add a fragment (optional)."""
-    print_colored("\nStep 7: Add Fragment (Optional)", SKY_BLUE)
+    """Prompt user to add a fragment."""
+    print_colored("\nStep 7: Add Fragment", SKY_BLUE)
     print_colored("Example: #section1", GREENISH)
-    print_colored("Press Enter to skip this step.", YELLOW)
-
-    fragment = input_colored("Enter fragment (e.g., #section1): ", YELLOW).strip()
+    fragment = input_colored("Enter fragment: ", YELLOW).strip()
     return f"#{fragment}" if fragment else ""
-
 
 def construct_url():
     """Construct and edit the URL step-by-step."""
@@ -147,8 +129,6 @@ def construct_url():
     path = ""
     query_string = ""
     fragment = ""
-    custom_flags = ""
-    authentication = ""
 
     while True:
         print_colored("\n--- URL Builder Menu ---", SKY_BLUE)
@@ -167,261 +147,38 @@ def construct_url():
         if choice == "1":
             scheme = select_scheme() or scheme
         elif choice == "2":
-            user_info = add_user_info() or user_info
+            user_info = add_user_info()
         elif choice == "3":
-            host = input_host() or host
+            host = input_host()
         elif choice == "4":
-            port = select_port(scheme) or port
+            port = select_port(scheme)
         elif choice == "5":
-            path = input_path() or path
+            path = input_path()
         elif choice == "6":
-            query_string = add_query_string() or query_string
+            query_string = add_query_string()
         elif choice == "7":
-            fragment = add_fragment() or fragment
+            fragment = add_fragment()
         elif choice == "8":
-            # Assemble the URL
             url = f"{scheme}://{user_info}{host}{port}{path}{query_string}{fragment}"
-            print_colored("\nConstructed URL:", SKY_BLUE)
-            print_colored(url, BOLD + GREENISH)
-
-            # Step 1: Select Authentication
-            authentication = select_authentication()
-
-            # Step 2: Add Custom Flags
-            custom_flag_choice = input_colored("Do you want to add custom flags? (y/n): ", YELLOW).strip().lower()
-            if custom_flag_choice == "y":
-                custom_flags = add_custom_flags()
-
-            # Assemble Final cURL Command
-            curl_command = f"curl {authentication} {custom_flags} '{url}'"
-            print_colored("\nGenerated cURL Command:", SKY_BLUE)
-            print_colored(curl_command, BOLD + GREENISH)
-
-            return curl_command
+            print_colored(f"Constructed URL: {url}", GREENISH + BOLD)
+            return url
         elif choice == "0":
-            return None  # Go back to the main menu
-        else:
-            print_colored("Invalid choice. Please enter a number between 0 and 8.", YELLOW)
-
-
-
-def select_http_method():
-    """Prompt user to select HTTP method, including an option for no method."""
-    while True:
-        print_colored("\nStep 8: Select HTTP Method", SKY_BLUE)
-        print_colored("Example: GET, POST, PUT, DELETE, PATCH", GREENISH)
-        print_colored("1. GET", YELLOW)
-        print_colored("2. POST", YELLOW)
-        print_colored("3. PUT", YELLOW)
-        print_colored("4. DELETE", YELLOW)
-        print_colored("5. PATCH", YELLOW)
-        print_colored("6. Plain Method (No HTTP method)", YELLOW)
-        print_colored("0. Go Back", YELLOW)
-
-        choice = input_colored("Choose a method (0-6): ", YELLOW)
-        if choice == "1":
-            return "-X GET"
-        elif choice == "2":
-            return "-X POST"
-        elif choice == "3":
-            return "-X PUT"
-        elif choice == "4":
-            return "-X DELETE"
-        elif choice == "5":
-            return "-X PATCH"
-        elif choice == "6":
-            print_colored("Proceeding without specifying an HTTP method.", GREENISH)
-            return ""  # Plain method: no HTTP method
-        elif choice == "0":
-            return None  # Go back
-        print_colored("Invalid choice. Please enter a number between 0 and 6.", YELLOW)
-
-def add_custom_flags():
-    """Prompt user to add custom cURL flags."""
-    flags = []
-    print_colored("\nStep 10: Add Custom Flags (Optional)", SKY_BLUE)
-    print_colored("Example: --verbose, --insecure, --proxy http://proxy:8080", GREENISH)
-    print_colored("Press Enter to finish this step.", YELLOW)
-
-    while True:
-        flag = input_colored("Enter a custom flag (or press Enter to finish): ", YELLOW).strip()
-        if not flag:  # If user presses Enter, finish adding flags
-            break
-        flags.append(flag)
-
-    return " ".join(flags) if flags else ""
-
-
-
-def generate_authorization(username, password):
-    """Generate a Base64-encoded Authorization header."""
-    credentials = f"{username}:{password}"
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-    return f"Authorization: Basic {encoded_credentials}"
-
-def select_authentication():
-    """Prompt user to select and configure an authentication method."""
-    print_colored("\nAuthentication Options", SKY_BLUE)
-    print_colored("1. Basic Authentication (username:password)", YELLOW)
-    print_colored("2. Bearer Token Authentication", YELLOW)
-    print_colored("3. Skip Authentication", YELLOW)
-
-    while True:
-        choice = input_colored("Select an authentication method (1-3): ", YELLOW).strip()
-        if choice == "1":
-            username = input_colored("Enter username: ", YELLOW).strip()
-            password = input_colored("Enter password: ", YELLOW).strip()
-            if username and password:
-                auth_header = generate_authorization(username, password)
-                return f"-H '{auth_header}'"  # Return header for curl
-            else:
-                print_colored("Both username and password are required. Try again.", YELLOW)
-        elif choice == "2":
-            token = input_colored("Enter Bearer Token: ", YELLOW).strip()
-            if token:
-                return f"-H 'Authorization: Bearer {token}'"
-            else:
-                print_colored("Bearer Token cannot be empty. Try again.", YELLOW)
-        elif choice == "3":
-            print_colored("Skipping Authentication.", GREENISH)
-            return ""
-        else:
-            print_colored("Invalid choice. Please select 1, 2, or 3.", YELLOW)
-
-
-def assemble_curl_command(url, http_method, headers, data, authentication, custom_flags, save_file, verbose_mode):
-    """Assemble the full cURL command."""
-    curl_command = ["curl"]
-
-    # Verbose mode
-    if verbose_mode:
-        curl_command.append("-v")
-
-    # HTTP Method
-    if http_method:
-        curl_command.append(http_method)
-
-    # Authentication Header
-    if authentication:
-        curl_command.append(authentication)
-
-    # Custom Headers
-    if headers:
-        for header in headers:
-            curl_command.append(f"-H '{header}'")
-
-    # Data Payload
-    if data:
-        curl_command.append(f"-d '{data}'")
-
-    # Custom Flags
-    if custom_flags:
-        curl_command.append(custom_flags)
-
-    # Save Response to File
-    if save_file:
-        curl_command.append(f"-o '{save_file}'")
-
-    # Final URL
-    curl_command.append(f"'{url}'")
-
-    return " ".join(curl_command)
-
-def execute_command(command):
-    """Execute the constructed Linux command."""
-    while True:
-        choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).lower()
-        if choice == "y":
-            try:
-                subprocess.run(command, shell=True, check=True, text=True)
-                print_colored("Command executed successfully.", GREENISH)
-            except subprocess.CalledProcessError as e:
-                print_colored(f"Error executing the command: {e}", YELLOW)
-            break
-        elif choice == "n":
-            print_colored("Command execution skipped.", YELLOW)
-            break
-        else:
-            print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
+            return None
 
 if __name__ == "__main__":
     print_colored("Welcome to the Ultimate cURL Command Builder!", GREENISH + BOLD)
     log_activity("Script started.")
-
     while True:
         print_colored("\n--- Main Menu ---", SKY_BLUE)
-        print_colored("1. Build and Execute cURL Command.", YELLOW)
-        print_colored("0. Exit.", YELLOW)
+        print_colored("1. Build URL", YELLOW)
+        print_colored("2. Show Tutorial", YELLOW)
+        print_colored("0. Exit", YELLOW)
 
-        choice = input_colored("Enter your choice: ", YELLOW)
-
+        choice = input_colored("Enter choice: ", YELLOW)
         if choice == "1":
-            # Step 1: Construct URL
-            url = construct_url()
-            if not url:  # Go back handling
-                continue
-
-            # Step 2: Select HTTP Method
-            http_method = select_http_method()
-            if http_method is None:  # Go back handling
-                continue
-
-            # Step 3: Add Headers
-            headers = []
-            while True:
-                header = input_colored("Enter a custom header (or press Enter to finish): ", YELLOW).strip()
-                if not header:  # User presses Enter to finish
-                    break
-                headers.append(header)
-
-            # Step 4: Add Data Payload
-            data = input_colored("Enter data payload (leave blank if none): ", YELLOW).strip()
-
-            # Step 5: Authentication
-            print_colored("\n--- Authentication Options ---", SKY_BLUE)
-            authentication = select_authentication()
-
-            # Step 6: Verbose Mode
-            verbose_mode = input_colored("Enable verbose mode? (y/n): ", YELLOW).strip().lower() == "y"
-
-            # Step 7: Custom Flags
-            print_colored("\nWould you like to add custom cURL flags?", SKY_BLUE)
-            custom_flags = ""
-            if input_colored("Add custom flags? (y/n): ", YELLOW).strip().lower() == "y":
-                custom_flags = add_custom_flags()
-
-            # Step 8: Save Response to File
-            save_file = input_colored("Enter file name to save response (leave blank if none): ", YELLOW).strip()
-
-            # Step 9: Assemble and Display Command
-            curl_command = assemble_curl_command(
-                url=url,
-                http_method=http_method,
-                headers=headers,
-                data=data,
-                authentication=authentication,
-                custom_flags=custom_flags,
-                save_file=save_file,
-                verbose_mode=verbose_mode
-            )
-
-            print_colored("\nGenerated cURL Command:", SKY_BLUE)
-            print_colored(curl_command, BOLD + GREENISH)
-
-            # Step 10: Execute Command
-            execute_choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).strip().lower()
-            if execute_choice == "y":
-                try:
-                    subprocess.run(curl_command, shell=True, check=True, text=True)
-                    print_colored("Command executed successfully.", GREENISH)
-                except subprocess.CalledProcessError as e:
-                    print_colored(f"Error executing the command: {e}", YELLOW)
-                log_activity(f"Executed Command: {curl_command}")
-            else:
-                print_colored("Command execution skipped.", YELLOW)
+            construct_url()
+        elif choice == "2":
+            show_tutorial()
         elif choice == "0":
-            print_colored("Exiting. Goodbye!", GREENISH)
-            log_activity("Script exited.")
+            print_colored("Goodbye!", GREENISH)
             break
-        else:
-            print_colored("Invalid choice. Please enter 0 or 1.", YELLOW)
