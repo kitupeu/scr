@@ -5,6 +5,9 @@ import requests
 import base64
 from datetime import datetime
 import time
+import sys
+import tty
+import termios
 
 # Define color codes for terminal output
 RESET = "\033[0m"
@@ -32,6 +35,30 @@ def input_colored(prompt, color):
     except EOFError:
         print_colored("\nInput terminated. Returning to previous menu.", YELLOW)
         return None
+
+def print_progress(message):
+    """Print progress updates."""
+    print_colored(f"[Progress] {message}...", GREENISH)
+    time.sleep(0.5)  # Simulate a small delay for visual effect
+
+def get_arrow_key():
+    """Detect UP or DOWN arrow keys."""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch1 = sys.stdin.read(1)
+        if ch1 == '\x1b':  # ESC sequence
+            ch2 = sys.stdin.read(1)
+            ch3 = sys.stdin.read(1)
+            if ch2 == '[' and ch3 == 'A':
+                return "UP"
+            elif ch2 == '[' and ch3 == 'B':
+                return "DOWN"
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return None
+
 
 def print_progress(message):
     """Print progress updates."""
@@ -71,40 +98,42 @@ def go_back_option(current_step):
             print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
 
 def construct_url():
-    """Ask questions continuously to construct the URL step-by-step."""
-    print_colored("\nAnswer the following questions to build your URL. Press Enter to skip any question.", SKY_BLUE)
+    """Construct the URL step-by-step with UP/DOWN arrow navigation."""
+    print_colored("\nAnswer the following questions to build your URL. Press Enter to accept defaults.", SKY_BLUE)
 
-    steps = ["Scheme", "User Info", "Host", "Port", "Path", "Query String", "Fragment"]
-    answers = ["http", "", "", "", "", "", ""]
-    step = 0
+    steps = [
+        {"name": "Scheme", "example": "http or https", "default": "http"},
+        {"name": "User Info", "example": "admin:admin@", "default": ""},
+        {"name": "Host", "example": "example.com or 192.168.1.1", "default": ""},
+        {"name": "Port", "example": ":443", "default": ""},
+        {"name": "Path", "example": "/index.php", "default": ""},
+        {"name": "Query String", "example": "?search=flag", "default": ""},
+        {"name": "Fragment", "example": "#section1", "default": ""},
+    ]
+    answers = [""] * len(steps)
+    current_step = 0
 
-    while step < len(steps):
-        print_progress(f"Building Step {step + 1}: {steps[step]}")
+    while current_step < len(steps):
+        # Display step info
+        step = steps[current_step]
+        print_progress(f"Step {current_step + 1}: {step['name']}")
+        print_colored(f"Example: {step['example']}", GREENISH)
 
-        if step == 0:
-            answers[step] = input_colored("Example: http or https [Default: http]: ", YELLOW).strip() or "http"
-        elif step == 1:
-            answers[step] = input_colored("Example: admin:admin@ (Press Enter to skip): ", YELLOW).strip()
-        elif step == 2:
-            while not answers[step]:
-                answers[step] = input_colored("Example: 192.168.1.1 or example.com: ", YELLOW).strip()
-                if not answers[step]:
-                    print_colored("Host cannot be empty. Please provide a valid domain or IP.", YELLOW)
-        elif step == 3:
-            port = input_colored("Example: :443 (Press Enter to skip): ", YELLOW).strip()
-            answers[step] = f":{port}" if port else ""
-        elif step == 4:
-            path = input_colored("Example: /index.php (Press Enter to skip): ", YELLOW).strip()
-            answers[step] = f"/{path.strip('/')}" if path else ""
-        elif step == 5:
-            query = input_colored("Example: ?search=flag (Press Enter to skip): ", YELLOW).strip()
-            answers[step] = f"?{query}" if query and not query.startswith("?") else query
-        elif step == 6:
-            fragment = input_colored("Example: #section1 (Press Enter to skip): ", YELLOW).strip()
-            answers[step] = f"#{fragment}" if fragment else ""
+        # Show previous value or default
+        previous_value = answers[current_step] or step["default"]
+        user_input = input_colored(f"Enter value [{previous_value}]: ", YELLOW).strip()
+        answers[current_step] = user_input if user_input else previous_value
 
-        step = go_back_option(step + 1)
+        # Detect navigation with arrow keys
+        key = get_arrow_key()
+        if key == "UP" and current_step > 0:
+            current_step -= 1
+        elif key == "DOWN" and current_step < len(steps) - 1:
+            current_step += 1
+        else:
+            current_step += 1
 
+    # Assemble URL
     url = f"{answers[0]}://{answers[1]}{answers[2]}{answers[3]}{answers[4]}{answers[5]}{answers[6]}"
     print_colored("\nConstructed URL:", SKY_BLUE)
     print_colored(url, BOLD + GREENISH)
@@ -156,20 +185,29 @@ def save_response_file():
 
 
 def assemble_curl_command():
+    """Assemble the full cURL command with all options."""
     url = construct_url()
+    print_progress("Selecting HTTP Method")
     http_method = select_http_method()
+    print_progress("Adding Custom Headers")
     headers = add_custom_headers()
+    print_progress("Adding Data Payload")
     data_payload = add_data_payload()
+    print_progress("Adding Custom Flags")
     custom_flags = add_custom_flags()
+    print_progress("Saving Response File")
     save_file = save_response_file()
 
     curl_command = "curl"
     for option in [http_method, headers, data_payload, custom_flags, save_file, f"'{url}'"]:
-        if option: curl_command += f" {option}"
+        if option:
+            curl_command += f" {option}"
 
     return curl_command
 
+
 def main_menu():
+    """Main menu to navigate and manage options."""
     while True:
         print_colored("\n--- Main Menu ---", SKY_BLUE)
         print_colored("1. Build and Execute cURL Command.", YELLOW)
@@ -181,10 +219,18 @@ def main_menu():
             command = assemble_curl_command()
             print_colored(f"\nGenerated cURL Command:\n{command}", SKY_BLUE)
             execute = input_colored("Execute this command? (y/n): ", YELLOW).lower()
-            if execute == "y": subprocess.run(command, shell=True)
-        elif choice == "2": show_tutorial()
-        elif choice == "0": break
+            if execute == "y":
+                subprocess.run(command, shell=True)
+        elif choice == "2":
+            show_tutorial()
+        elif choice == "0":
+            print_colored("Exiting. Goodbye!", GREENISH)
+            log_activity("Script exited.")
+            break
+        else:
+            print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
 
 if __name__ == "__main__":
     print_colored("Welcome to the Ultimate cURL Command Builder!", GREENISH + BOLD)
+    log_activity("Script started.")
     main_menu()
