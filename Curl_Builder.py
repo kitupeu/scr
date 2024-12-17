@@ -49,7 +49,19 @@ def show_tutorial():
     print_colored("11. Custom Flags: Add additional cURL flags like --verbose or --insecure.", GREENISH)
     print_colored("12. Save Response: Option to save the response to a file.", GREENISH)
     print_colored("\nYou can skip any question by pressing Enter. At the end, you can view, edit, or execute the command.", YELLOW)
+    print_colored("You can also go back at every step to revise previous inputs.", YELLOW)
     print_colored("\nEnjoy using the tool!", GREENISH)
+
+def go_back_option(current_step):
+    """Ask user if they want to go back to a previous step."""
+    while True:
+        go_back = input_colored("Would you like to go back to the previous step? (y/n): ", YELLOW).strip().lower()
+        if go_back == 'y':
+            return current_step - 1
+        elif go_back == 'n':
+            return current_step
+        else:
+            print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
 
 def select_http_method():
     """Prompt user to select an HTTP method."""
@@ -128,45 +140,33 @@ def construct_url():
     """Ask questions continuously to construct the URL step-by-step."""
     print_colored("\nAnswer the following questions to build your URL. Press Enter to skip any question.", SKY_BLUE)
     
-    # Initialize variables
-    scheme = "http"
-    user_info = ""
-    host = ""
-    port = ""
-    path = ""
-    query_string = ""
-    fragment = ""
+    steps = ["Scheme", "User Info", "Host", "Port", "Path", "Query String", "Fragment"]
+    answers = ["http", "", "", "", "", "", ""]
 
-    print_colored("\nStep 1 - Scheme (http/https)", YELLOW)
-    scheme = input_colored("Example: http or https [Default: http]: ", YELLOW).strip() or "http"
+    step = 0
+    while step < len(steps):
+        print_colored(f"\nStep {step + 1} - {steps[step]}", YELLOW)
+        if step == 0:
+            answers[step] = input_colored("Example: http or https [Default: http]: ", YELLOW).strip() or "http"
+        elif step == 1:
+            answers[step] = input_colored("Example: admin:admin@ (Press Enter to skip): ", YELLOW).strip()
+        elif step == 2:
+            answers[step] = input_colored("Example: 192.168.1.1 or example.com: ", YELLOW).strip()
+        elif step == 3:
+            port = input_colored("Example: :443 (Press Enter to skip): ", YELLOW).strip()
+            answers[step] = f":{port}" if port else ""
+        elif step == 4:
+            path = input_colored("Example: /index.php (Press Enter to skip): ", YELLOW).strip()
+            answers[step] = f"/{path.strip('/')}" if path else ""
+        elif step == 5:
+            query = input_colored("Example: ?search=flag (Press Enter to skip): ", YELLOW).strip()
+            answers[step] = f"?{query}" if query and not query.startswith("?") else query
+        elif step == 6:
+            fragment = input_colored("Example: #section1 (Press Enter to skip): ", YELLOW).strip()
+            answers[step] = f"#{fragment}" if fragment else ""
+        step = go_back_option(step + 1)
 
-    print_colored("\nStep 2 - User Info (username:password)", YELLOW)
-    user_info = input_colored("Example: admin:admin@ (Press Enter to skip): ", YELLOW).strip()
-
-    print_colored("\nStep 3 - Host (Domain/IP)", YELLOW)
-    while not host:
-        host = input_colored("Example: 192.168.1.1 or example.com: ", YELLOW).strip()
-        if not host:
-            print_colored("Host cannot be empty. Please provide a valid domain or IP.", YELLOW)
-
-    print_colored("\nStep 4 - Port", YELLOW)
-    port = input_colored("Example: :443 (Press Enter to skip): ", YELLOW).strip()
-    port = f":{port}" if port else ""
-
-    print_colored("\nStep 5 - Path", YELLOW)
-    path = input_colored("Example: /index.php (Press Enter to skip): ", YELLOW).strip()
-    path = f"/{path.strip('/')}" if path else ""
-
-    print_colored("\nStep 6 - Query String", YELLOW)
-    query_string = input_colored("Example: ?search=flag (Press Enter to skip): ", YELLOW).strip()
-    if query_string and not query_string.startswith("?"):
-        query_string = f"?{query_string}"
-
-    print_colored("\nStep 7 - Fragment", YELLOW)
-    fragment = input_colored("Example: #section1 (Press Enter to skip): ", YELLOW).strip()
-    fragment = f"#{fragment}" if fragment else ""
-
-    return f"{scheme}://{user_info}{host}{port}{path}{query_string}{fragment}"
+    return f"{answers[0]}://{answers[1]}{answers[2]}{answers[3]}{answers[4]}{answers[5]}{answers[6]}"
 
 def assemble_curl_command():
     """Assemble the full cURL command with all options."""
@@ -207,15 +207,20 @@ def main_menu():
             print_colored(curl_command, BOLD + GREENISH)
 
             execute = input_colored("\nDo you want to execute this command? (y/n): ", YELLOW).lower()
-            if execute == "y":
+        if execute == "y":
                 log_activity(f"Executed Command: {curl_command}")
-                subprocess.run(curl_command, shell=True)
+                try:
+                    subprocess.run(curl_command, shell=True, check=True)
+                    print_colored("Command executed successfully.", GREENISH)
+                except subprocess.CalledProcessError as e:
+                    print_colored(f"Error executing the command: {e}", YELLOW)
             else:
                 print_colored("Command execution skipped.", YELLOW)
         elif choice == "2":
             show_tutorial()
         elif choice == "0":
             print_colored("Exiting. Goodbye!", GREENISH)
+            log_activity("Script exited.")
             break
         else:
             print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
@@ -223,4 +228,3 @@ def main_menu():
 if __name__ == "__main__":
     print_colored("Welcome to the Ultimate cURL Command Builder!", GREENISH + BOLD)
     log_activity("Script started.")
-    main_menu()
