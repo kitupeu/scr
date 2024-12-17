@@ -305,34 +305,33 @@ if __name__ == "__main__":
     while True:
         print_colored("\n--- Main Menu ---", SKY_BLUE)
         print_colored("1. Build and Execute cURL Command.", YELLOW)
-        print_colored("2. Exit.", YELLOW)
+        print_colored("0. Exit.", YELLOW)
 
         choice = input_colored("Enter your choice: ", YELLOW)
 
         if choice == "1":
             # Step 1: Construct URL
             url = construct_url()
-            if not url:
+            if not url:  # Go back handling
                 continue
 
-            # Step 2: Select HTTP Method
+            # Step 2: Select HTTP method
             http_method = select_http_method()
-            if http_method is None:
+            if http_method is None:  # Go back handling
                 continue
 
-            # Step 3: Add Custom Flags
+            # Step 3: Add custom flags
             custom_flags = add_custom_flags()
-            if custom_flags is None:
+            if custom_flags is None:  # Go back handling
                 continue
 
             # Step 4: Add Headers
             headers = []
             while True:
-                header = input_colored("Enter a custom header (or 'done' to finish): ", YELLOW).strip()
-                if header.lower() == "done":
+                header = input_colored("Enter a custom header (or press Enter to finish): ", YELLOW).strip()
+                if not header:  # User presses Enter to finish
                     break
-                if header:
-                    headers.append(header)
+                headers.append(header)
 
             # Step 5: Add Data Payload
             data = input_colored("Enter data payload (leave blank if none): ", YELLOW).strip()
@@ -356,12 +355,9 @@ if __name__ == "__main__":
                 log_activity(f"Executed Command: {curl_command}")
             else:
                 print_colored("Command execution skipped.", YELLOW)
-        elif choice == "2":
+        elif choice == "0":
             print_colored("Exiting. Goodbye!", GREENISH)
             log_activity("Script exited.")
             break
         else:
-            print_colored("Invalid choice. Please enter 1 or 2.", YELLOW)
-
-
-
+            print_colored("Invalid choice. Please enter 0 or 1.", YELLOW)
