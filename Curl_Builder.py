@@ -52,38 +52,31 @@ def select_scheme():
 
 def add_user_info():
     """Prompt user to add credentials (optional)."""
-    while True:
-        print_colored("\nStep 2: Add User Info (Optional Credentials)", SKY_BLUE)
-        print_colored("Example: admin:admin@", GREENISH)
-        print_colored("1. Add credentials (username:password)", YELLOW)
-        print_colored("2. Skip this step", YELLOW)
-        print_colored("0. Go Back", YELLOW)
-        choice = input_colored("Choose an option (0, 1, or 2): ", YELLOW)
-        if choice == "1":
-            username = input_colored("Enter username: ", YELLOW).strip()
-            password = input_colored("Enter password: ", YELLOW).strip()
-            if username and password:
-                return f"{username.strip()}:{password.strip()}@"
-            print_colored("Invalid input. Both username and password are required.", YELLOW)
-        elif choice == "2":
-            return ""
-        elif choice == "0":
-            return None  # Go back
-        print_colored("Invalid choice. Please enter 0, 1, or 2.", YELLOW)
+    print_colored("\nStep 2: Add User Info (Optional Credentials)", SKY_BLUE)
+    print_colored("Example: admin:admin@", GREENISH)
+    print_colored("Press Enter to skip this step.", YELLOW)
+
+    username = input_colored("Enter username (or press Enter to skip): ", YELLOW).strip()
+    if not username:  # Skip if username is empty
+        return ""
+    password = input_colored("Enter password: ", YELLOW).strip()
+    if password:
+        return f"{username}:{password}@"
+    else:
+        print_colored("Password cannot be empty. Skipping User Info.", YELLOW)
+        return ""
 
 
-def input_host():
-    """Prompt user to enter the host (domain or IP)."""
-    while True:
-        print_colored("\nStep 3: Enter Host (Domain or IP)", SKY_BLUE)
-        print_colored("Example: kitup.eu or 192.168.1.1", GREENISH)
-        print_colored("0. Go Back", YELLOW)
-        host = input_colored("Enter domain name or IP address (or '0' to Go Back): ", YELLOW).strip()
-        if host == "0":
-            return None  # Go back
-        if host:
-            return host.strip()  # Remove spaces
-        print_colored("Host cannot be empty. Please enter a valid domain or IP.", YELLOW)
+
+def input_path():
+    """Prompt user to enter path."""
+    print_colored("\nStep 5: Enter Path", SKY_BLUE)
+    print_colored("Example: /index.php or /dashboard", GREENISH)
+    print_colored("Press Enter to skip this step (default to root).", YELLOW)
+
+    path = input_colored("Enter path (e.g., /index.php): ", YELLOW).strip()
+    return f"/{path.strip('/')}" if path else ""
+
 
 def select_port(scheme):
     """Prompt user to enter port, defaulting based on scheme."""
@@ -118,31 +111,30 @@ def add_query_string():
     query_params = []
     print_colored("\nStep 6: Add Query String (Optional)", SKY_BLUE)
     print_colored("Example: ?user=admin&status=active", GREENISH)
-    print_colored("Type 'done' to finish or '0' to Go Back", YELLOW)
+    print_colored("Press Enter to skip this step.", YELLOW)
+
     while True:
-        param = input_colored("Enter parameter name: ", YELLOW).strip()
-        if param.lower() == "0":
-            return None  # Go back
-        if param.lower() == "done":
+        param = input_colored("Enter parameter name (or press Enter to finish): ", YELLOW).strip()
+        if not param:  # If user presses Enter without input, finish this step
             break
         value = input_colored(f"Enter value for '{param}': ", YELLOW).strip()
-        if param and value:
+        if value:
             query_params.append(f"{param}={value}")
         else:
-            print_colored("Both parameter name and value are required.", YELLOW)
+            print_colored("Value cannot be empty. Try again.", YELLOW)
+
     return f"?{'&'.join(query_params)}" if query_params else ""
 
 
 def add_fragment():
     """Prompt user to add a fragment (optional)."""
-    while True:
-        print_colored("\nStep 7: Add Fragment (Optional)", SKY_BLUE)
-        print_colored("Example: #section1", GREENISH)
-        print_colored("0. Go Back", YELLOW)
-        fragment = input_colored("Enter fragment (e.g., #section1) or '0' to Go Back: ", YELLOW).strip()
-        if fragment == "0":
-            return None  # Go back
-        return f"#{fragment}" if fragment else ""
+    print_colored("\nStep 7: Add Fragment (Optional)", SKY_BLUE)
+    print_colored("Example: #section1", GREENISH)
+    print_colored("Press Enter to skip this step.", YELLOW)
+
+    fragment = input_colored("Enter fragment (e.g., #section1): ", YELLOW).strip()
+    return f"#{fragment}" if fragment else ""
+
 
 def construct_url():
     """Construct and edit the URL step-by-step."""
@@ -229,21 +221,17 @@ def add_custom_flags():
     """Prompt user to add custom cURL flags."""
     flags = []
     print_colored("\nStep 10: Add Custom Flags (Optional)", SKY_BLUE)
-    print_colored("Example: --verbose, --insecure, --connect-timeout 10, --proxy http://proxy:8080", GREENISH)
-    print_colored("Type 'done' to finish, '0' to Go Back.", YELLOW)
+    print_colored("Example: --verbose, --insecure, --proxy http://proxy:8080", GREENISH)
+    print_colored("Press Enter to finish this step.", YELLOW)
 
     while True:
-        flag = input_colored("Enter a custom flag (or 'done' to finish, '0' to Go Back): ", YELLOW).strip()
-        if flag.lower() == "0":
-            return None  # Go back
-        elif flag.lower() == "done":
+        flag = input_colored("Enter a custom flag (or press Enter to finish): ", YELLOW).strip()
+        if not flag:  # If user presses Enter, finish adding flags
             break
-        elif flag:
-            flags.append(flag)
-        else:
-            print_colored("Invalid input. Try again.", YELLOW)
+        flags.append(flag)
 
     return " ".join(flags) if flags else ""
+
 
 
 def generate_authorization(username, password):
