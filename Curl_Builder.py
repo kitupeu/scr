@@ -2,6 +2,7 @@ import os
 import subprocess
 import readline
 import requests
+import base64
 from datetime import datetime
 
 # Define color codes for terminal output
@@ -225,25 +226,71 @@ def select_http_method():
         print_colored("Invalid choice. Please enter a number between 0 and 6.", YELLOW)
 
 def add_custom_flags():
-    """Prompt user to add custom cURL flags, including a plain option and Go Back."""
+    """Prompt user to add custom cURL flags."""
     flags = []
-    print_colored("\nStep 9: Add Custom Flags (Optional)", SKY_BLUE)
-    print_colored("Example: -H 'Content-Type: application/json', -d 'key=value', --verbose", GREENISH)
-    print_colored("Type 'done' when finished, '0' to Go Back, or leave blank for no flags.", YELLOW)
+    print_colored("\nStep 10: Add Custom Flags (Optional)", SKY_BLUE)
+    print_colored("Example: --verbose, --insecure, --connect-timeout 10, --proxy http://proxy:8080", GREENISH)
+    print_colored("Type 'done' to finish, '0' to Go Back.", YELLOW)
 
     while True:
         flag = input_colored("Enter a custom flag (or 'done' to finish, '0' to Go Back): ", YELLOW).strip()
         if flag.lower() == "0":
             return None  # Go back
         elif flag.lower() == "done":
-            break  # Finish adding flags
-        elif not flag:
-            print_colored("Proceeding with no custom flags.", GREENISH)
-            break  # Plain option: no flags
-        else:
+            break
+        elif flag:
             flags.append(flag)
+        else:
+            print_colored("Invalid input. Try again.", YELLOW)
 
-    return " ".join(flags) if flags else ""  # Combine all flags into one string
+    return " ".join(flags) if flags else ""
+
+
+def generate_authorization(username, password):
+    """Generate a Base64-encoded Authorization header."""
+    credentials = f"{username}:{password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+    return f"Authorization: Basic {encoded_credentials}"
+
+def assemble_curl_command(url, user_info, http_method, custom_flags, headers, data, save_file):
+    """Assemble the full cURL command."""
+    curl_command = ["curl"]
+
+    # Verbose mode
+    verbose = input_colored("Enable verbose mode? (y/n): ", YELLOW).strip().lower()
+    if verbose == "y":
+        curl_command.append("-v")
+
+    # HTTP Method
+    if http_method:
+        curl_command.append(http_method)
+
+    # Authorization Header (if user_info provided)
+    if user_info:
+        username, password = user_info.split(":")
+        auth_header = generate_authorization(username, password)
+        curl_command.append(f"-H '{auth_header}'")
+
+    # Custom Headers
+    for header in headers:
+        curl_command.append(f"-H '{header}'")
+
+    # Data Payload
+    if data:
+        curl_command.append(f"-d '{data}'")
+
+    # Custom Flags
+    if custom_flags:
+        curl_command.append(custom_flags)
+
+    # Save Response to File
+    if save_file:
+        curl_command.append(f"-o {save_file}")
+
+    # Final URL
+    curl_command.append(f"'{url}'")
+
+    return " ".join(curl_command)
 
 
 def execute_command(command):
@@ -264,12 +311,12 @@ def execute_command(command):
             print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
 
 if __name__ == "__main__":
-    print_colored("Welcome to the Linux Command Generator!", GREENISH + BOLD)
+    print_colored("Welcome to the Ultimate cURL Command Builder!", GREENISH + BOLD)
     log_activity("Script started.")
 
     while True:
         print_colored("\n--- Main Menu ---", SKY_BLUE)
-        print_colored("1. Build a cURL command.", YELLOW)
+        print_colored("1. Build and Execute cURL Command.", YELLOW)
         print_colored("2. Exit.", YELLOW)
 
         choice = input_colored("Enter your choice: ", YELLOW)
@@ -277,32 +324,56 @@ if __name__ == "__main__":
         if choice == "1":
             # Step 1: Construct URL
             url = construct_url()
-            if not url:  # Go back handling
+            if not url:
                 continue
 
-            # Step 2: Select HTTP method
+            # Step 2: Select HTTP Method
             http_method = select_http_method()
-            if http_method is None:  # Go back handling
+            if http_method is None:
                 continue
 
-            # Step 3: Add custom flags
+            # Step 3: Add Custom Flags
             custom_flags = add_custom_flags()
-            if custom_flags is None:  # Go back handling
+            if custom_flags is None:
                 continue
 
-            # Step 4: Assemble the full cURL command
-            curl_command = f"curl {http_method} {custom_flags} '{url}'"
+            # Step 4: Add Headers
+            headers = []
+            while True:
+                header = input_colored("Enter a custom header (or 'done' to finish): ", YELLOW).strip()
+                if header.lower() == "done":
+                    break
+                if header:
+                    headers.append(header)
+
+            # Step 5: Add Data Payload
+            data = input_colored("Enter data payload (leave blank if none): ", YELLOW).strip()
+
+            # Step 6: Save Response to File
+            save_file = input_colored("Enter file name to save response (leave blank if none): ", YELLOW).strip()
+
+            # Step 7: Assemble and Display Command
+            curl_command = assemble_curl_command(url, user_info, http_method, custom_flags, headers, data, save_file)
             print_colored("\nGenerated cURL Command:", SKY_BLUE)
             print_colored(curl_command, BOLD + GREENISH)
 
-            # Log and optionally execute
-            log_activity(f"Generated Command: {curl_command}")
-            execute_command(curl_command)
+            # Step 8: Execute Command
+            execute_choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).strip().lower()
+            if execute_choice == "y":
+                try:
+                    subprocess.run(curl_command, shell=True, check=True, text=True)
+                    print_colored("Command executed successfully.", GREENISH)
+                except subprocess.CalledProcessError as e:
+                    print_colored(f"Error executing the command: {e}", YELLOW)
+                log_activity(f"Executed Command: {curl_command}")
+            else:
+                print_colored("Command execution skipped.", YELLOW)
         elif choice == "2":
             print_colored("Exiting. Goodbye!", GREENISH)
             log_activity("Script exited.")
             break
         else:
             print_colored("Invalid choice. Please enter 1 or 2.", YELLOW)
+
 
 
