@@ -37,6 +37,7 @@ def print_progress(message):
     """Print progress updates."""
     print_colored(f"[Progress] {message}...", GREENISH)
     time.sleep(0.5)  # Simulate a small delay for visual effect
+
 def show_tutorial():
     """Display a tutorial for how to use the program."""
     print_colored("\n--- How to Use the cURL Command Builder ---", SKY_BLUE)
@@ -68,10 +69,11 @@ def go_back_option(current_step):
             return current_step
         else:
             print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
+
 def construct_url():
     """Ask questions continuously to construct the URL step-by-step."""
     print_colored("\nAnswer the following questions to build your URL. Press Enter to skip any question.", SKY_BLUE)
-    
+
     steps = ["Scheme", "User Info", "Host", "Port", "Path", "Query String", "Fragment"]
     answers = ["http", "", "", "", "", "", ""]
     step = 0
@@ -107,6 +109,7 @@ def construct_url():
     print_colored("\nConstructed URL:", SKY_BLUE)
     print_colored(url, BOLD + GREENISH)
     return url
+
 def select_http_method():
     """Prompt user to select an HTTP method."""
     print_colored("\nStep 8 - Select HTTP Method", SKY_BLUE)
@@ -128,7 +131,6 @@ def select_http_method():
         else: print_colored("Invalid choice. Please enter 1-6.", YELLOW)
 
 def add_custom_headers():
-    """Add custom headers."""
     headers = []
     while True:
         header = input_colored("Enter header (or press Enter to finish): ", YELLOW).strip()
@@ -137,12 +139,10 @@ def add_custom_headers():
     return " ".join(headers)
 
 def add_data_payload():
-    """Add data payload."""
     data = input_colored("Enter data payload (e.g., JSON or form data): ", YELLOW).strip()
     return f"-d '{data}'" if data else ""
 
 def add_custom_flags():
-    """Add custom flags."""
     flags = []
     while True:
         flag = input_colored("Enter a flag (or press Enter to finish): ", YELLOW).strip()
@@ -151,9 +151,10 @@ def add_custom_flags():
     return " ".join(flags)
 
 def save_response_file():
-    """Prompt for file saving."""
     file_name = input_colored("Save response to file (or press Enter to skip): ", YELLOW).strip()
     return f"-o {file_name}" if file_name else ""
+
+
 def assemble_curl_command():
     url = construct_url()
     http_method = select_http_method()
