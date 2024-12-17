@@ -147,6 +147,8 @@ def construct_url():
     path = ""
     query_string = ""
     fragment = ""
+    custom_flags = ""
+    authentication = ""
 
     while True:
         print_colored("\n--- URL Builder Menu ---", SKY_BLUE)
@@ -167,7 +169,7 @@ def construct_url():
         elif choice == "2":
             user_info = add_user_info() or user_info
         elif choice == "3":
-            host = input_host() or host  # Call the fixed input_host() function
+            host = input_host() or host
         elif choice == "4":
             port = select_port(scheme) or port
         elif choice == "5":
@@ -177,11 +179,25 @@ def construct_url():
         elif choice == "7":
             fragment = add_fragment() or fragment
         elif choice == "8":
-            # Assemble the final URL
+            # Assemble the URL
             url = f"{scheme}://{user_info}{host}{port}{path}{query_string}{fragment}"
             print_colored("\nConstructed URL:", SKY_BLUE)
             print_colored(url, BOLD + GREENISH)
-            return url
+
+            # Step 1: Select Authentication
+            authentication = select_authentication()
+
+            # Step 2: Add Custom Flags
+            custom_flag_choice = input_colored("Do you want to add custom flags? (y/n): ", YELLOW).strip().lower()
+            if custom_flag_choice == "y":
+                custom_flags = add_custom_flags()
+
+            # Assemble Final cURL Command
+            curl_command = f"curl {authentication} {custom_flags} '{url}'"
+            print_colored("\nGenerated cURL Command:", SKY_BLUE)
+            print_colored(curl_command, BOLD + GREENISH)
+
+            return curl_command
         elif choice == "0":
             return None  # Go back to the main menu
         else:
@@ -243,28 +259,56 @@ def generate_authorization(username, password):
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
     return f"Authorization: Basic {encoded_credentials}"
 
-def assemble_curl_command(url, user_info, http_method, custom_flags, headers, data, save_file):
+def select_authentication():
+    """Prompt user to select and configure an authentication method."""
+    print_colored("\nAuthentication Options", SKY_BLUE)
+    print_colored("1. Basic Authentication (username:password)", YELLOW)
+    print_colored("2. Bearer Token Authentication", YELLOW)
+    print_colored("3. Skip Authentication", YELLOW)
+
+    while True:
+        choice = input_colored("Select an authentication method (1-3): ", YELLOW).strip()
+        if choice == "1":
+            username = input_colored("Enter username: ", YELLOW).strip()
+            password = input_colored("Enter password: ", YELLOW).strip()
+            if username and password:
+                auth_header = generate_authorization(username, password)
+                return f"-H '{auth_header}'"  # Return header for curl
+            else:
+                print_colored("Both username and password are required. Try again.", YELLOW)
+        elif choice == "2":
+            token = input_colored("Enter Bearer Token: ", YELLOW).strip()
+            if token:
+                return f"-H 'Authorization: Bearer {token}'"
+            else:
+                print_colored("Bearer Token cannot be empty. Try again.", YELLOW)
+        elif choice == "3":
+            print_colored("Skipping Authentication.", GREENISH)
+            return ""
+        else:
+            print_colored("Invalid choice. Please select 1, 2, or 3.", YELLOW)
+
+
+def assemble_curl_command(url, http_method, headers, data, authentication, custom_flags, save_file, verbose_mode):
     """Assemble the full cURL command."""
     curl_command = ["curl"]
 
     # Verbose mode
-    verbose = input_colored("Enable verbose mode? (y/n): ", YELLOW).strip().lower()
-    if verbose == "y":
+    if verbose_mode:
         curl_command.append("-v")
 
     # HTTP Method
     if http_method:
         curl_command.append(http_method)
 
-    # Authorization Header (if user_info provided)
-    if user_info:
-        username, password = user_info.split(":")
-        auth_header = generate_authorization(username, password)
-        curl_command.append(f"-H '{auth_header}'")
+    # Authentication Header
+    if authentication:
+        curl_command.append(authentication)
 
     # Custom Headers
-    for header in headers:
-        curl_command.append(f"-H '{header}'")
+    if headers:
+        for header in headers:
+            curl_command.append(f"-H '{header}'")
 
     # Data Payload
     if data:
@@ -276,13 +320,12 @@ def assemble_curl_command(url, user_info, http_method, custom_flags, headers, da
 
     # Save Response to File
     if save_file:
-        curl_command.append(f"-o {save_file}")
+        curl_command.append(f"-o '{save_file}'")
 
     # Final URL
     curl_command.append(f"'{url}'")
 
     return " ".join(curl_command)
-
 
 def execute_command(command):
     """Execute the constructed Linux command."""
@@ -318,17 +361,12 @@ if __name__ == "__main__":
             if not url:  # Go back handling
                 continue
 
-            # Step 2: Select HTTP method
+            # Step 2: Select HTTP Method
             http_method = select_http_method()
             if http_method is None:  # Go back handling
                 continue
 
-            # Step 3: Add custom flags
-            custom_flags = add_custom_flags()
-            if custom_flags is None:  # Go back handling
-                continue
-
-            # Step 4: Add Headers
+            # Step 3: Add Headers
             headers = []
             while True:
                 header = input_colored("Enter a custom header (or press Enter to finish): ", YELLOW).strip()
@@ -336,18 +374,41 @@ if __name__ == "__main__":
                     break
                 headers.append(header)
 
-            # Step 5: Add Data Payload
+            # Step 4: Add Data Payload
             data = input_colored("Enter data payload (leave blank if none): ", YELLOW).strip()
 
-            # Step 6: Save Response to File
+            # Step 5: Authentication
+            print_colored("\n--- Authentication Options ---", SKY_BLUE)
+            authentication = select_authentication()
+
+            # Step 6: Verbose Mode
+            verbose_mode = input_colored("Enable verbose mode? (y/n): ", YELLOW).strip().lower() == "y"
+
+            # Step 7: Custom Flags
+            print_colored("\nWould you like to add custom cURL flags?", SKY_BLUE)
+            custom_flags = ""
+            if input_colored("Add custom flags? (y/n): ", YELLOW).strip().lower() == "y":
+                custom_flags = add_custom_flags()
+
+            # Step 8: Save Response to File
             save_file = input_colored("Enter file name to save response (leave blank if none): ", YELLOW).strip()
 
-            # Step 7: Assemble and Display Command
-            curl_command = assemble_curl_command(url, user_info, http_method, custom_flags, headers, data, save_file)
+            # Step 9: Assemble and Display Command
+            curl_command = assemble_curl_command(
+                url=url,
+                http_method=http_method,
+                headers=headers,
+                data=data,
+                authentication=authentication,
+                custom_flags=custom_flags,
+                save_file=save_file,
+                verbose_mode=verbose_mode
+            )
+
             print_colored("\nGenerated cURL Command:", SKY_BLUE)
             print_colored(curl_command, BOLD + GREENISH)
 
-            # Step 8: Execute Command
+            # Step 10: Execute Command
             execute_choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).strip().lower()
             if execute_choice == "y":
                 try:
