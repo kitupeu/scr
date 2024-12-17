@@ -62,7 +62,7 @@ def add_user_info():
             username = input_colored("Enter username: ", YELLOW).strip()
             password = input_colored("Enter password: ", YELLOW).strip()
             if username and password:
-                return f"{username}:{password}@"
+                return f"{username.strip()}:{password.strip()}@"
             print_colored("Invalid input. Both username and password are required.", YELLOW)
         elif choice == "2":
             return ""
@@ -81,7 +81,7 @@ def input_host():
         if host == "0":
             return None  # Go back
         if host:
-            return host
+            return host.strip()  # Remove spaces
         print_colored("Host cannot be empty. Please enter a valid domain or IP.", YELLOW)
 
 def select_port(scheme):
@@ -164,9 +164,9 @@ def construct_url():
         print_colored(f"7. Fragment: {fragment}", YELLOW)
         print_colored("8. Finish and View URL", GREENISH)
         print_colored("0. Go Back to Main Menu", YELLOW)
-        
+
         choice = input_colored("Select a component to edit (0-8): ", YELLOW)
-        
+
         if choice == "1":
             scheme = select_scheme() or scheme
         elif choice == "2":
@@ -182,6 +182,7 @@ def construct_url():
         elif choice == "7":
             fragment = add_fragment() or fragment
         elif choice == "8":
+            # Assemble the final URL
             url = f"{scheme}://{user_info}{host}{port}{path}{query_string}{fragment}"
             print_colored("\nConstructed URL:", SKY_BLUE)
             print_colored(url, BOLD + GREENISH)
@@ -190,6 +191,7 @@ def construct_url():
             return None  # Go back to the main menu
         else:
             print_colored("Invalid choice. Please enter a number between 0 and 8.", YELLOW)
+
 
 def select_http_method():
     """Prompt user to select HTTP method, including an option for no method."""
