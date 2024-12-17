@@ -192,30 +192,57 @@ def construct_url():
             print_colored("Invalid choice. Please enter a number between 0 and 8.", YELLOW)
 
 def select_http_method():
-    """Prompt user to select HTTP method."""
+    """Prompt user to select HTTP method, including an option for no method."""
     while True:
-        print_colored("\nSelect HTTP Method:", SKY_BLUE)
-        methods = ["GET", "POST", "PUT", "DELETE", "PATCH"]
-        for idx, method in enumerate(methods, 1):
-            print_colored(f"{idx}. {method}", YELLOW)
-        choice = input_colored("Choose a method (1-5): ", YELLOW)
-        if choice.isdigit() and 1 <= int(choice) <= len(methods):
-            return f"-X {methods[int(choice) - 1]}"
-        print_colored("Invalid choice. Please enter a number between 1 and 5.", YELLOW)
+        print_colored("\nStep 8: Select HTTP Method", SKY_BLUE)
+        print_colored("Example: GET, POST, PUT, DELETE, PATCH", GREENISH)
+        print_colored("1. GET", YELLOW)
+        print_colored("2. POST", YELLOW)
+        print_colored("3. PUT", YELLOW)
+        print_colored("4. DELETE", YELLOW)
+        print_colored("5. PATCH", YELLOW)
+        print_colored("6. Plain Method (No HTTP method)", YELLOW)
+        print_colored("0. Go Back", YELLOW)
+
+        choice = input_colored("Choose a method (0-6): ", YELLOW)
+        if choice == "1":
+            return "-X GET"
+        elif choice == "2":
+            return "-X POST"
+        elif choice == "3":
+            return "-X PUT"
+        elif choice == "4":
+            return "-X DELETE"
+        elif choice == "5":
+            return "-X PATCH"
+        elif choice == "6":
+            print_colored("Proceeding without specifying an HTTP method.", GREENISH)
+            return ""  # Plain method: no HTTP method
+        elif choice == "0":
+            return None  # Go back
+        print_colored("Invalid choice. Please enter a number between 0 and 6.", YELLOW)
 
 def add_custom_flags():
-    """Prompt user to add custom cURL flags."""
+    """Prompt user to add custom cURL flags, including a plain option and Go Back."""
     flags = []
-    print_colored("\nAdd Custom Flags (e.g., -H, -d, --verbose). Type 'done' when finished:", SKY_BLUE)
+    print_colored("\nStep 9: Add Custom Flags (Optional)", SKY_BLUE)
+    print_colored("Example: -H 'Content-Type: application/json', -d 'key=value', --verbose", GREENISH)
+    print_colored("Type 'done' when finished, '0' to Go Back, or leave blank for no flags.", YELLOW)
+
     while True:
-        flag = input_colored("Enter flag (or 'done' to finish): ", YELLOW).strip()
-        if flag.lower() == "done":
-            break
-        if flag:
-            flags.append(flag)
+        flag = input_colored("Enter a custom flag (or 'done' to finish, '0' to Go Back): ", YELLOW).strip()
+        if flag.lower() == "0":
+            return None  # Go back
+        elif flag.lower() == "done":
+            break  # Finish adding flags
+        elif not flag:
+            print_colored("Proceeding with no custom flags.", GREENISH)
+            break  # Plain option: no flags
         else:
-            print_colored("Flag cannot be empty. Try again.", YELLOW)
-    return " ".join(flags)
+            flags.append(flag)
+
+    return " ".join(flags) if flags else ""  # Combine all flags into one string
+
 
 def execute_command(command):
     """Execute the constructed Linux command."""
@@ -242,24 +269,30 @@ if __name__ == "__main__":
         print_colored("\n--- Main Menu ---", SKY_BLUE)
         print_colored("1. Build a cURL command.", YELLOW)
         print_colored("2. Exit.", YELLOW)
-        
+
         choice = input_colored("Enter your choice: ", YELLOW)
-        
+
         if choice == "1":
             # Step 1: Construct URL
             url = construct_url()
-            
+            if not url:  # Go back handling
+                continue
+
             # Step 2: Select HTTP method
             http_method = select_http_method()
-            
+            if http_method is None:  # Go back handling
+                continue
+
             # Step 3: Add custom flags
             custom_flags = add_custom_flags()
-            
+            if custom_flags is None:  # Go back handling
+                continue
+
             # Step 4: Assemble the full cURL command
             curl_command = f"curl {http_method} {custom_flags} '{url}'"
             print_colored("\nGenerated cURL Command:", SKY_BLUE)
             print_colored(curl_command, BOLD + GREENISH)
-            
+
             # Log and optionally execute
             log_activity(f"Generated Command: {curl_command}")
             execute_command(curl_command)
