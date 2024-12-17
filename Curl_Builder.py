@@ -107,23 +107,20 @@ def input_path():
         return f"/{path.strip('/')}" if path else ""
 
 def add_query_string():
-    """Prompt user to add query parameters (optional)."""
-    query_params = []
+    """Prompt user to enter the entire query string freely."""
     print_colored("\nStep 6: Add Query String (Optional)", SKY_BLUE)
-    print_colored("Example: ?user=admin&status=active", GREENISH)
+    print_colored("Example: ?search=flag&status=active", GREENISH)
     print_colored("Press Enter to skip this step.", YELLOW)
 
-    while True:
-        param = input_colored("Enter parameter name (or press Enter to finish): ", YELLOW).strip()
-        if not param:  # If user presses Enter without input, finish this step
-            break
-        value = input_colored(f"Enter value for '{param}': ", YELLOW).strip()
-        if value:
-            query_params.append(f"{param}={value}")
-        else:
-            print_colored("Value cannot be empty. Try again.", YELLOW)
+    query_string = input_colored("Enter the query string (including '?', or press Enter to skip): ", YELLOW).strip()
+    
+    # Validate and ensure correct format
+    if query_string and not query_string.startswith("?"):
+        print_colored("Query string must start with '?'. Adding '?' automatically.", GREENISH)
+        query_string = f"?{query_string}"
 
-    return f"?{'&'.join(query_params)}" if query_params else ""
+    return query_string
+
 
 
 def add_fragment():
