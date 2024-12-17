@@ -181,6 +181,23 @@ def add_custom_flags():
             print_colored("Flag cannot be empty. Try again.", YELLOW)
     return " ".join(flags)
 
+def execute_command(command):
+    """Execute the constructed Linux command."""
+    while True:
+        choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).lower()
+        if choice == "y":
+            try:
+                subprocess.run(command, shell=True, check=True, text=True)
+                print_colored("Command executed successfully.", GREENISH)
+            except subprocess.CalledProcessError as e:
+                print_colored(f"Error executing the command: {e}", YELLOW)
+            break
+        elif choice == "n":
+            print_colored("Command execution skipped.", YELLOW)
+            break
+        else:
+            print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
+
 if __name__ == "__main__":
     print_colored("Welcome to the Linux Command Generator!", GREENISH + BOLD)
     log_activity("Script started.")
@@ -216,41 +233,5 @@ if __name__ == "__main__":
             break
         else:
             print_colored("Invalid choice. Please enter 1 or 2.", YELLOW)
-def execute_command(command):
-    """Execute the constructed Linux command."""
-    while True:
-        choice = input_colored("Do you want to execute this command? (y/n): ", YELLOW).lower()
-        if choice == "y":
-            try:
-                subprocess.run(command, shell=True, check=True, text=True)
-                print_colored("Command executed successfully.", GREENISH)
-            except subprocess.CalledProcessError as e:
-                print_colored(f"Error executing the command: {e}", YELLOW)
-            break
-        elif choice == "n":
-            print_colored("Command execution skipped.", YELLOW)
-            break
-        else:
-            print_colored("Invalid choice. Please enter 'y' or 'n'.", YELLOW)
-
-f __name__ == "__main__":
-    print_colored("Welcome to the URL Constructor and cURL Builder!", GREENISH + BOLD)
-    log_activity("Script started.")
-    
-    while True:
-        print_colored("\nMain Menu:", SKY_BLUE)
-        print_colored("1. Construct URL.", YELLOW)
-        print_colored("2. Exit.", YELLOW)
-        choice = input_colored("Enter your choice: ", YELLOW)
-        
-        if choice == "1":
-            url = construct_url()  # This now points to the updated version
-            print_colored(f"\nYou can now use this URL: {url}", GREENISH)
-        elif choice == "2":
-            print_colored("Exiting. Goodbye!", GREENISH)
-            log_activity("Script exited.")
-            break
-        else:
-            print_colored("Invalid choice. Please select 1 or 2.", YELLOW)
 
 
