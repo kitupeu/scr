@@ -68,14 +68,19 @@ def add_user_info():
 
 
 
-def input_path():
-    """Prompt user to enter path."""
-    print_colored("\nStep 5: Enter Path", SKY_BLUE)
-    print_colored("Example: /index.php or /dashboard", GREENISH)
-    print_colored("Press Enter to skip this step (default to root).", YELLOW)
+def input_host():
+    """Prompt user to enter the host (domain or IP)."""
+    while True:
+        print_colored("\nStep 3: Enter Host (Domain or IP)", SKY_BLUE)
+        print_colored("Example: kitup.eu or 192.168.1.1", GREENISH)
+        print_colored("Press Enter to skip this step.", YELLOW)
 
-    path = input_colored("Enter path (e.g., /index.php): ", YELLOW).strip()
-    return f"/{path.strip('/')}" if path else ""
+        host = input_colored("Enter domain name or IP address: ", YELLOW).strip()
+        if not host:  # Skip if user presses Enter
+            print_colored("Skipping Host step.", GREENISH)
+            return ""
+        return host.strip()  # Return cleaned host input
+
 
 
 def select_port(scheme):
@@ -162,7 +167,7 @@ def construct_url():
         elif choice == "2":
             user_info = add_user_info() or user_info
         elif choice == "3":
-            host = input_host() or host
+            host = input_host() or host  # Call the fixed input_host() function
         elif choice == "4":
             port = select_port(scheme) or port
         elif choice == "5":
@@ -181,6 +186,7 @@ def construct_url():
             return None  # Go back to the main menu
         else:
             print_colored("Invalid choice. Please enter a number between 0 and 8.", YELLOW)
+
 
 
 def select_http_method():
